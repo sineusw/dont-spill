@@ -118,7 +118,7 @@ try{Object.assign(S,JSON.parse(localStorage.getItem('ds_save')||'{}'))}catch(e){
 if(!S.best.diner&&best)S.best.diner=best;
 const UPS=[{k:'tables',name:'Tables',max:8,base:50,g:1.6,eff:l=>'$'+(l*2)+'/min idle'},{k:'waiter',name:'Waiters',max:5,base:120,g:1.8,eff:l=>'$'+(l*6)+'/min idle'},{k:'host',name:'Host',max:5,base:150,g:1.9,eff:l=>'+'+(l*10)+'% tips'},{k:'bartender',name:'Bartender',max:5,base:200,g:1.9,eff:l=>'steadier stack Lv'+l},{k:'busboy',name:'Busboy',max:5,base:180,g:1.9,eff:l=>'-'+(l*18)+'% wet floors'}];
 const DECOR=[{k:'plants',name:'Plants',cost:80},{k:'lights',name:'String Lights',cost:150},{k:'neon',name:'Neon Sign',cost:300},{k:'jukebox',name:'Jukebox',cost:500},{k:'fountain',name:'Fountain',cost:900}];
-const boost=()=>1+.1*S.tab.host+.05*S.decor.length+(has('cash')?.25:0),rateMin=()=>S.tab.tables*2+S.tab.waiter*6;
+const boost=()=>1+.1*S.tab.host+.05*S.decor.length+(has('cash')?.25:0),rateMin=()=>S.tab.tables*2+S.tab.waiter*6+(window.roomRate?window.roomRate():0);
 const pending=()=>Math.floor(Math.min(rateMin()*180,(Date.now()-S.last)/60000*rateMin()));
 const upCost=u=>Math.round(u.base*Math.pow(u.g,S.tab[u.k]-(u.k==='tables'?1:0)));
 function renderBuild(){$('wallet3').textContent='$'+S.coins;$('collect').textContent='COLLECT $'+pending();$('rate').textContent='Earning $'+rateMin()+'/min while you\'re away (holds up to 3 hrs) · Tips boost +'+Math.round((boost()-1)*100)+'%';
