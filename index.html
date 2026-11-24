@@ -7,18 +7,23 @@ html,body{margin:0;height:100%;background:#1a1220;overflow:hidden;touch-action:n
 canvas{display:block;width:100%;height:100%}
 .ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;background:rgba(20,10,25,.74);padding:24px;gap:14px;box-sizing:border-box}
 .hidden{display:none}
-h1{font-size:58px;margin:0 0 8px;line-height:.92;letter-spacing:1px;color:#ffd23f;text-shadow:0 5px 0 #b3361f,0 10px 24px rgba(0,0,0,.5);transform:rotate(-4deg)}
+h1{font-size:clamp(34px,6.4vh,58px);margin:0;line-height:.92;letter-spacing:1px;color:#ffd23f;text-shadow:0 5px 0 #b3361f,0 10px 24px rgba(0,0,0,.5);transform:rotate(-4deg)}
 p{margin:0;font-size:17px;max-width:330px;line-height:1.4;color:#f3e9ff}
 button{font:800 22px system-ui,-apple-system,sans-serif;padding:16px 38px;border:0;border-radius:999px;background:#ff5a3c;color:#fff;box-shadow:0 6px 0 #a8321e;cursor:pointer;margin-top:8px}
 button:active{transform:translateY(4px);box-shadow:0 2px 0 #a8321e}
 .big{font-size:52px;font-weight:900;color:#ffd23f}
 .quote{font-style:italic;color:#ffb8a8}
 .lbl{font-size:18px;font-weight:800;letter-spacing:2px;color:#ffb8a8}
-.ov.scroll{background:rgba(20,10,25,.95);justify-content:flex-start;overflow-y:auto;gap:12px}
-.ov.scroll h1{font-size:48px}
+.ov.scroll{background:rgba(20,10,25,.97);justify-content:center;overflow:hidden;gap:clamp(6px,1.4vh,12px)}
+.ov{overflow:hidden}
+.ov.scroll h1{font-size:clamp(32px,6vh,48px)}
+@media (max-height:700px){h1,.ov.scroll h1{font-size:30px!important}.bk{padding:4px 10px!important}.ov{padding:10px 16px}button{padding:12px 30px;font-size:19px}.card{padding:7px 10px}}
 .card{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);border-radius:16px;padding:10px 12px;text-align:left;width:100%;max-width:340px;box-sizing:border-box}
+.items{grid-template-columns:repeat(3,1fr)!important}.item{min-height:0!important;font-size:13px!important;padding:7px!important}.item .sw{height:16px;margin-bottom:4px}
+.goal{font-size:12px!important;padding:1px 0!important}
+.bk{display:flex;align-items:center;gap:8px;padding:6px 10px!important}.bk button{font-size:15px!important;padding:8px 12px!important;margin:0!important}
 .rests,.items{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:340px}
-.rest,.item{border-radius:14px;padding:10px;font-weight:800;font-size:15px;color:#fff;border:3px solid transparent;cursor:pointer;text-align:left;min-height:58px;box-sizing:border-box}
+.rest,.item{border-radius:14px;padding:8px;font-weight:800;font-size:14px;color:#fff;border:3px solid transparent;cursor:pointer;text-align:left;min-height:58px;box-sizing:border-box}
 .item{background:rgba(255,255,255,.08)}
 .rest small,.item small{display:block;font-weight:600;font-size:12px;opacity:.9;margin-top:2px}
 .rest.sel,.item.eq{border-color:#ffd23f}.rest.lock{opacity:.45}
@@ -31,13 +36,16 @@ button.ghost{background:#3a2a48;box-shadow:0 6px 0 #1e1428;font-size:18px;paddin
 <canvas id="c"></canvas>
 <div id="start" class="ov scroll">
   <h1>DON'T<br>SPILL</h1>
-  <div class="wallet" id="wallet"></div><div id="streak" style="font-size:14px;color:#ffb8a8"></div>
+  <div style="display:flex;gap:12px;align-items:baseline"><span class="wallet" id="wallet"></span><span id="streak" style="font-size:14px;color:#ffb8a8"></span></div>
   <div class="card" id="rankCard"></div>
+  <div class="row" style="width:100%;max-width:340px;flex-wrap:nowrap"><button class="ghost" id="go" style="flex:1;margin:0;padding:13px 6px">🍸 CLASSIC</button><button class="ghost" id="shopBtn" style="flex:1;margin:0;padding:13px 6px">👔 SHOP</button><button class="ghost" id="buildBtn" style="flex:1;margin:0;padding:13px 6px;background:#2bb673;box-shadow:0 6px 0 #1a7a4c">🏠 BUILD</button></div>
+  <div class="card"><div style="font-weight:900;font-size:13px;margin-bottom:2px">TODAY'S GOALS · $100 each</div><div id="goals"></div></div>
+</div>
+<div id="classic" class="ov scroll hidden">
+  <div class="lbl">CLASSIC RUN</div>
+  <p style="font-size:14px">Drag to move · Grab drinks · Dodge bumps · Deliver to the VIP row</p>
   <div class="rests" id="rests"></div>
-  <div class="card"><div style="font-weight:900;margin-bottom:4px">TODAY'S GOALS · $100 each</div><div id="goals"></div></div>
-  <div class="row"><button id="go">START SHIFT</button><button class="ghost" id="shopBtn">SHOP</button></div>
-  <button class="ghost" id="buildBtn" style="width:100%;max-width:340px;background:#2bb673;box-shadow:0 6px 0 #1a7a4c">🏠 MY RESTAURANT</button>
-  <p style="font-size:13px;opacity:.8">Drag to move · Grab drinks · Dodge bumps · Deliver to the VIP row</p>
+  <button id="go2">START SHIFT</button><button class="ghost" id="clBack">BACK</button>
 </div>
 <div id="shop" class="ov scroll hidden">
   <div class="lbl">STAFF SHOP</div><div class="wallet" id="wallet2"></div>
@@ -45,11 +53,11 @@ button.ghost{background:#3a2a48;box-shadow:0 6px 0 #1e1428;font-size:18px;paddin
   <div style="font-weight:800">GLASSES</div><div class="items" id="glasses"></div>
   <button id="shopBack">BACK</button>
 </div>
-<div id="build" class="ov scroll hidden" style="top:46%;border-radius:22px 22px 0 0;padding-top:14px">
-  <div class="row" style="align-items:center"><div class="wallet" id="wallet3"></div><button id="collect" style="margin:0;font-size:18px;padding:12px 22px">COLLECT</button></div>
-  <div id="rate" style="font-size:13px;opacity:.85"></div>
-  <div id="ups" style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:8px"></div>
-  <button class="ghost" id="buildBack">BACK</button>
+<div id="build" class="ov scroll hidden" style="top:auto;max-height:72%;border-radius:22px 22px 0 0;padding:12px 14px 16px;justify-content:flex-start">
+  <div class="row" style="align-items:center;flex-wrap:nowrap"><div class="wallet" id="wallet3"></div><button id="collect" style="margin:0;font-size:16px;padding:10px 16px">COLLECT</button><button class="ghost" id="buildBack" style="margin:0;font-size:16px;padding:10px 14px">✕</button></div>
+  <div id="rate" style="font-size:12px;opacity:.85"></div>
+  <div class="tabs" style="display:flex;gap:8px"><button id="tStaff" style="margin:0;font-size:14px;padding:8px 18px">STAFF</button><button id="tDecor" class="ghost" style="margin:0;font-size:14px;padding:8px 18px">DECOR</button></div>
+  <div id="ups" style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:6px"></div>
 </div>
 <div id="revive" class="ov hidden">
   <div class="lbl">SECOND CHANCE?</div><p>Watch a short ad to pick the stack back up and keep your shift going. One per shift.</p>
@@ -114,8 +122,10 @@ const boost=()=>1+.1*S.tab.host+.05*S.decor.length+(has('cash')?.25:0),rateMin=(
 const pending=()=>Math.floor(Math.min(rateMin()*180,(Date.now()-S.last)/60000*rateMin()));
 const upCost=u=>Math.round(u.base*Math.pow(u.g,S.tab[u.k]-(u.k==='tables'?1:0)));
 function renderBuild(){$('wallet3').textContent='$'+S.coins;$('collect').textContent='COLLECT $'+pending();$('rate').textContent='Earning $'+rateMin()+'/min while you\'re away (holds up to 3 hrs) · Tips boost +'+Math.round((boost()-1)*100)+'%';
- $('ups').innerHTML=UPS.map(u=>{const l=S.tab[u.k],mx=l>=u.max,c=upCost(u);return `<div class="card" style="display:flex;align-items:center;gap:10px"><div style="flex:1"><b>${u.name}</b> <small>Lv ${l}/${u.max}</small><div style="font-size:12px;opacity:.85">${u.eff(l)}${mx?'':' → '+u.eff(l+1)}</div></div><button data-u="${u.k}" style="font-size:16px;padding:10px 14px;margin:0;${!mx&&S.coins<c?'opacity:.5':''}">${mx?'MAX':'$'+c}</button></div>`}).join('')
- +DECOR.map(d=>{const own=S.decor.includes(d.k);return `<div class="card" style="display:flex;align-items:center;gap:10px"><div style="flex:1"><b>${d.name}</b><div style="font-size:12px;opacity:.85">Decor · +5% tips</div></div><button data-d="${d.k}" style="font-size:16px;padding:10px 14px;margin:0;${!own&&S.coins<d.cost?'opacity:.5':''}">${own?'OWNED':'$'+d.cost}</button></div>`}).join('');}
+ $('ups').innerHTML=(bTab==='decor'?'':UPS.map(u=>{const l=S.tab[u.k],mx=l>=u.max,c=upCost(u);return `<div class="card bk"><div style="flex:1"><b>${u.name}</b> <small>Lv ${l}/${u.max}</small><div style="font-size:12px;opacity:.85">${u.eff(l)}${mx?'':' → '+u.eff(l+1)}</div></div><button data-u="${u.k}" style="font-size:16px;padding:10px 14px;margin:0;${!mx&&S.coins<c?'opacity:.5':''}">${mx?'MAX':'$'+c}</button></div>`}).join(''))
+ +(bTab!=='decor'?'':DECOR.map(d=>{const own=S.decor.includes(d.k);return `<div class="card bk"><div style="flex:1"><b>${d.name}</b><div style="font-size:12px;opacity:.85">Decor · +5% tips</div></div><button data-d="${d.k}" style="font-size:16px;padding:10px 14px;margin:0;${!own&&S.coins<d.cost?'opacity:.5':''}">${own?'OWNED':'$'+d.cost}</button></div>`}).join(''));
+ $('tStaff').className=bTab==='decor'?'ghost':'';$('tDecor').className=bTab==='decor'?'':'ghost';}
+let bTab='staff';
 function buildClick(e){const b=e.target.closest('button');if(!b)return;
  if(b.dataset.u){const u=UPS.find(x=>x.k===b.dataset.u);if(S.tab[u.k]>=u.max)return;const c=upCost(u);if(S.coins<c)return;S.coins-=c;S.tab[u.k]++;}
  else if(b.dataset.d){const d=DECOR.find(x=>x.k===b.dataset.d);if(S.decor.includes(d.k)||S.coins<d.cost)return;S.coins-=d.cost;S.decor.push(d.k);}
@@ -158,7 +168,7 @@ const has=u=>RANKS.slice(0,S.rank).some(r=>r.u===u),xpNeed=r=>Math.round(80*Math
 const PW={magnet:{u:'magnet',c:'#ff4fa3',ic:'🧲',d:8,n:'MAGNET'},shield:{u:'shield',c:'#ffd23f',ic:'🛡️',d:6,n:'STEADY HANDS'},double:{u:'double',c:'#2bb673',ic:'x2',d:8,n:'DOUBLE DRINKS'},slow:{u:'slow',c:'#2fd3ff',ic:'⏱',d:5,n:'SLOW-MO'}};
 let rankUp=0;
 function daily(){const d=today();if(S.day===d)return;S.day=d;let h=0;for(const c of d)h=(h*31+c.charCodeAt(0))>>>0;const idx=[];while(idx.length<3){const i=h%GOALS.length;if(!idx.includes(i))idx.push(i);h=(h*1103515245+12345)>>>0;}S.goals=idx.map(i=>({...GOALS[i],p:0,done:0}));save();}
-function renderMenu(){daily();{const nr=RANKS[S.rank],need=xpNeed(S.rank),mx=S.rank>=RANKS.length;$('rankCard').innerHTML=`<div style="display:flex;justify-content:space-between;font-weight:900"><span>⭐ Rank ${S.rank}: ${RANKS[S.rank-1].n}</span><span style="font-size:13px;opacity:.8">${mx?'MAX':S.xp+'/'+need+' XP'}</span></div><div style="height:10px;background:rgba(255,255,255,.15);border-radius:5px;margin:6px 0"><div style="height:100%;width:${mx?100:Math.min(100,S.xp/need*100)}%;background:#ffd23f;border-radius:5px"></div></div><div style="font-size:12px;opacity:.85">${nr?'Next rank: '+nr.n+' unlocks '+UNL[nr.u]:'All perks unlocked'}</div>`;}$('go').textContent='START SHIFT '+(S.shift||1);$('wallet').textContent='$'+S.coins+' in your wallet';$('buildBtn').textContent='🏠 MY RESTAURANT'+(pending()>0?' · $'+pending()+' ready':'');$('streak').textContent=S.streak>1?S.streak+'-day streak 🔥':'';const b=bestAll();
+function renderMenu(){daily();{const nr=RANKS[S.rank],need=xpNeed(S.rank),mx=S.rank>=RANKS.length;$('rankCard').innerHTML=`<div style="display:flex;justify-content:space-between;font-weight:900"><span>⭐ Rank ${S.rank}: ${RANKS[S.rank-1].n}</span><span style="font-size:13px;opacity:.8">${mx?'MAX':S.xp+'/'+need+' XP'}</span></div><div style="height:10px;background:rgba(255,255,255,.15);border-radius:5px;margin:6px 0"><div style="height:100%;width:${mx?100:Math.min(100,S.xp/need*100)}%;background:#ffd23f;border-radius:5px"></div></div><div style="font-size:12px;opacity:.85">${nr?'Next rank: '+nr.n+' unlocks '+UNL[nr.u]:'All perks unlocked'}</div>`;}$('go2').textContent='START SHIFT '+(S.shift||1);$('wallet').textContent='$'+S.coins+' in your wallet';$('buildBtn').textContent='🏠 BUILD'+(pending()>0?' 💵':'');$('streak').textContent=S.streak>1?S.streak+'-day streak 🔥':'';const b=bestAll();
  $('rests').innerHTML=REST.map((r,i)=>{const lock=b<r.need;return `<div class="rest ${i===S.rest?'sel':''} ${lock?'lock':''}" data-i="${i}" style="background:${r.bg}">${r.name}<small>${lock?'🔒 Best $'+r.need+' to unlock':r.desc+'<br>Tips x'+r.mult+' · Best $'+(S.best[r.id]||0)}</small></div>`}).join('');
  $('goals').innerHTML=S.goals.map(g=>`<div class="goal ${g.done?'done':''}"><span>${g.done?'✓ ':''}${g.txt}</span><span>${g.done?'DONE':Math.min(g.p,g.n)+'/'+g.n}</span></div>`).join('');}
 function renderShop(){$('wallet2').textContent='$'+S.coins;
@@ -481,7 +491,7 @@ function showOver(){
  document.getElementById('line').textContent='"'+(lastWon?pick(["Shift done. Don't get comfortable.",'You can come back tomorrow.','Acceptable. Barely.']):pick(LINES.over))+'" — Manager';
  $('oLbl').textContent=lastWon?'SHIFT '+(S.shift-1)+' COMPLETE!':'SHIFT FAILED';$('again').textContent=lastWon?'NEXT SHIFT':'RETRY SHIFT';$('earned').innerHTML=lastEarn;if(rankUp){[523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>snd(f,.25,'triangle',.15),i*120));rankUp=0;}$('over').classList.remove('hidden');
 }
-$('go').onclick=start;$('again').onclick=start;
+$('go').onclick=()=>{renderMenu();$('start').classList.add('hidden');$('classic').classList.remove('hidden');};$('go2').onclick=()=>{$('classic').classList.add('hidden');start();};$('clBack').onclick=()=>{$('classic').classList.add('hidden');$('start').classList.remove('hidden');};$('tStaff').onclick=()=>{bTab='staff';renderBuild();};$('tDecor').onclick=()=>{bTab='decor';renderBuild();};$('again').onclick=start;
 $('rests').onclick=e=>{const el=e.target.closest('.rest');if(!el||el.classList.contains('lock'))return;S.rest=+el.dataset.i;save();renderMenu();};
 $('shopBtn').onclick=()=>{renderShop();$('start').classList.add('hidden');$('shop').classList.remove('hidden');};
 $('shopBack').onclick=()=>{$('shop').classList.add('hidden');renderMenu();$('start').classList.remove('hidden');};
