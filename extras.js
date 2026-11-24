@@ -31,8 +31,8 @@ function renderShop2(){const list=tab==='o'?OUTFITS:GLASSES,cur=tab==='o'?S.outf
  <div class="sgrid">${list.map(i=>{const o=S.own.includes(key(tab,i.id)),e=i.id===cur;return `<button class="scard2 ${i.id===sel?'sel':''}" data-id="${i.id}"><canvas data-pv="${i.id}"></canvas><b>${i.name}</b><i class="${e?'on':o?'own':S.coins>=i.cost?'':'lock'}">${e?'WEARING':o?'OWNED':'$'+i.cost}</i></button>`}).join('')}</div>
  <button id="shAct" style="${on?'background:#6a5a76;box-shadow:0 6px 0 #3a2a48':!own&&S.coins<it.cost?'background:#8a7a86;box-shadow:0 6px 0 #4a3a46':'background:#2bb673;box-shadow:0 6px 0 #1a7a4c'}">${on?'✓ EQUIPPED':own?'EQUIP':S.coins>=it.cost?'BUY $'+it.cost:'NEED $'+(it.cost-S.coins)+' MORE'}</button>
  <button class="ghost" id="shBack" style="margin:0">BACK</button>`;
- const h=Math.max(140,Math.min(210,innerHeight*.26))-8;dsPreview($('shPv'),tab==='o'?sel:S.outfit,tab==='g'?sel:S.glass,h*1.1,h);
- const cs=Math.min(86,(Math.min(innerWidth,360)-16)/3-10);shop.querySelectorAll('[data-pv]').forEach(c=>dsPreview(c,tab==='o'?c.dataset.pv:S.outfit,tab==='g'?c.dataset.pv:S.glass,cs,cs*.9));
+ const h=Math.max(180,Math.min(290,innerHeight*.33))-10;dsPreview($('shPv'),tab==='o'?sel:S.outfit,tab==='g'?sel:S.glass,h*1.1,h);
+ const cs=Math.min(150,(Math.min(innerWidth,380)-40)/2-18);shop.querySelectorAll('[data-pv]').forEach(c=>dsPreview(c,tab==='o'?c.dataset.pv:S.outfit,tab==='g'?c.dataset.pv:S.glass,cs,cs*.9));
  $('shO').onclick=()=>{tab='o';sel=null;renderShop2();};$('shG').onclick=()=>{tab='g';sel=null;renderShop2();};
  shop.querySelectorAll('.scard2').forEach(b=>b.onclick=()=>{sel=b.dataset.id;renderShop2();});
  $('shAct').onclick=()=>{if(on)return;if(!own){if(S.coins<it.cost){buzz([40,30,40]);return;}S.coins-=it.cost;S.own.push(key(tab,sel));snd(880,.1,'triangle',.15);setTimeout(()=>snd(1320,.15,'triangle',.12),80);buzz([20,30,60]);}if(tab==='o')S.outfit=sel;else S.glass=sel;save();renderShop2();};
@@ -53,6 +53,23 @@ async function openLB2(board='all'){const ov=$('sOv');dsShow('<div style="color:
  ${online?'':'<div style="font-size:11px;color:#fff;opacity:.6">Showing scores on this phone until the online board is connected.</div>'}
  ${window.gcShow?'<button class="ghost" id="lbGC" style="margin:0">🎮 GAME CENTER</button>':''}<button class="ghost" id="lbBk" style="margin:0">BACK</button>`);if($('lbGC'))$('lbGC').onclick=()=>gcShow();
  ov.style.background='radial-gradient(circle at 50% 15%,#2d4a96,#141a3a 55%,#0c0f1e)';ov.style.justifyContent='flex-start';ov.style.paddingTop='clamp(14px,3vh,30px)';
- $('lbA').onclick=()=>openLB2('all');$('lbD').onclick=()=>openLB2('daily');$('lbBk').onclick=()=>{ov.style.background='rgba(20,10,25,.985)';ov.style.justifyContent='center';ov.style.paddingTop='';dsHide();};}
+ $('lbA').onclick=()=>(window.openLB2Glow||openLB2)('all');$('lbD').onclick=()=>(window.openLB2Glow||openLB2)('daily');$('lbBk').onclick=()=>{ov.style.background='rgba(20,10,25,.985)';ov.style.justifyContent='center';ov.style.paddingTop='';dsHide();};}
 $('lbBtn').onclick=()=>openLB2('all');
+// ---- shop + leaderboard glow-up
+(()=>{const c=document.createElement('style');c.textContent=`#shop .stage{height:clamp(190px,34vh,300px)!important;background:radial-gradient(circle at 50% 40%,#ffe9b0,#ffb84d 45%,#c2410c 100%)!important;border:4px solid #1a1220;border-radius:22px;box-shadow:0 6px 0 #1a1220,inset 0 -30px 40px rgba(0,0,0,.18)}
+#shop .stage canvas{animation:shBob 2.4s ease-in-out infinite}@keyframes shBob{50%{transform:translateY(-4px)}}
+#shop .sgrid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important}
+#shop .scard2{padding:8px!important;border-radius:16px!important}#shop .scard2 canvas{background:radial-gradient(circle at 50% 45%,#fff6dc,#ffd9a0)!important;border-radius:12px}
+#shop .scard2.sel{outline:4px solid #ffd23f;transform:translateY(-2px)}
+#sOv .pod .pav{animation:lbBob 1.8s ease-in-out infinite;box-shadow:0 0 0 3px #1a1220,0 0 18px rgba(255,210,63,.6)}
+#sOv .pod .pcol:nth-child(2) .pav{width:64px!important;height:64px!important;font-size:26px!important;box-shadow:0 0 0 4px #1a1220,0 0 30px #ffd23f}
+#sOv .pod .pcol:nth-child(2)::before{content:'👑';display:block;font-size:30px;animation:lbBob 1.2s ease-in-out infinite;margin-bottom:-6px}
+#sOv .pblk{border:3px solid #1a1220;box-shadow:inset 0 8px 0 rgba(255,255,255,.35),0 5px 0 #1a1220;font:900 22px system-ui;color:#1a1220}
+#sOv .lrow{animation:lbIn .45s both;background:linear-gradient(90deg,rgba(255,255,255,.14),rgba(255,255,255,.05))!important;border-radius:14px!important}
+#sOv .lrow:nth-of-type(2){animation-delay:.05s}#sOv .lrow:nth-of-type(3){animation-delay:.1s}#sOv .lrow:nth-of-type(4){animation-delay:.15s}#sOv .lrow:nth-of-type(5){animation-delay:.2s}#sOv .lrow:nth-of-type(6){animation-delay:.25s}#sOv .lrow:nth-of-type(7){animation-delay:.3s}
+#sOv .lrow.me{background:linear-gradient(90deg,rgba(255,210,63,.4),rgba(255,122,60,.25))!important;box-shadow:0 0 18px rgba(255,210,63,.5);animation:lbIn .45s both,lbGlow 1.6s ease-in-out infinite}
+#sOv .lbSpark{position:fixed;inset:0;pointer-events:none;z-index:-1;background-image:radial-gradient(2px 2px at 20% 30%,#fff,transparent),radial-gradient(2px 2px at 70% 20%,#ffd23f,transparent),radial-gradient(1.5px 1.5px at 40% 70%,#7ee0ff,transparent),radial-gradient(2px 2px at 85% 60%,#ff7ab8,transparent),radial-gradient(1.5px 1.5px at 10% 85%,#fff,transparent);animation:lbTw 2.5s ease-in-out infinite}
+@keyframes lbBob{50%{transform:translateY(-5px)}}@keyframes lbIn{from{opacity:0;transform:translateX(-30px)}}@keyframes lbGlow{50%{box-shadow:0 0 28px rgba(255,210,63,.8)}}@keyframes lbTw{50%{opacity:.4}}`;document.head.appendChild(c);
+ const _o=openLB2;window.openLB2Glow=async(b)=>{await _o(b);const ov=$('sOv');if(ov&&!ov.querySelector('.lbSpark')){const sp=document.createElement('div');sp.className='lbSpark';ov.prepend(sp);}if(typeof confetti==='function'&&window.W)try{confetti(W/2,H*.2,30);}catch(e){}};
+ $('lbBtn').onclick=()=>openLB2Glow('all');})();
 })();

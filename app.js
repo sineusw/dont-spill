@@ -25,7 +25,13 @@ document.addEventListener('pointerdown',()=>{if(S.set.music&&!mG)musicOn();},{on
 try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
 // start music right away (the iPhone app allows audio without a tap; the web version starts on first tap)
 setTimeout(()=>{if(S.set.music)musicOn();if(AC&&AC.state!=='running'&&!NAT){musicOff();}},300);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.set.music)setTimeout(musicOn,200);});
+function audioWake(){try{if(!AC){if(S.set.music)musicOn();return;}if(AC.state==='closed'){AC=new(window.AudioContext||window.webkitAudioContext)();mG=null;}
+ if(AC.state!=='running'){musicOff();AC.resume().then(()=>{if(S.set.music)musicOn();}).catch(()=>{});}else if(S.set.music&&!mG)musicOn();}catch(e){}}
+window.audioWake=audioWake;
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(audioWake,150);else musicOff();});
+window.addEventListener('focus',()=>setTimeout(audioWake,150));window.addEventListener('pageshow',()=>setTimeout(audioWake,150));
+document.addEventListener('pointerdown',()=>{if(AC&&AC.state!=='running')audioWake();},true);
+setInterval(()=>{if(!document.hidden&&AC&&AC.state!=='running')audioWake();},3000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)musicOff();});
 // ---- settings screen
 const css=document.createElement('style');css.textContent=`#gear{position:fixed;top:max(10px,env(safe-area-inset-top));right:12px;z-index:8;width:44px;height:44px;border-radius:50%;padding:0!important;margin:0!important;font-size:22px!important;background:rgba(26,18,32,.8)!important;box-shadow:0 4px 0 #0c0810!important;border:2px solid #ffd23f}
@@ -41,7 +47,7 @@ function openSet(){const row=(k,l)=>`<div class="tg">${l}<div class="sw ${S.set[
  <button class="ghost" id="stReset" style="width:100%;max-width:320px;margin:0;color:#ff8a7a">Reset progress</button>
  <div style="font-size:12px;opacity:.6">Don't Spill v1.0 · Petty Games Studio</div><button id="stDone">DONE</button>`;
  ov.classList.remove('hidden');
- ov.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{const k=s.dataset.k;S.set[k]=S.set[k]?0:1;save();s.classList.toggle('on',!!S.set[k]);if(k==='music')S.set.music?musicOn():musicOff();if(k==='vib'&&S.set.vib)buzz(30);if(k==='notif'&&S.set.notif&&window.dsNotifAsk)dsNotifAsk().then(ok=>s.classList.toggle('on',ok));});
+ ov.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{const k=s.dataset.k;S.set[k]=S.set[k]?0:1;save();s.classList.toggle('on',!!S.set[k]);if(k==='music')S.set.music?audioWake():musicOff();if(k==='sfx'&&S.set.sfx)audioWake();if(k==='vib'&&S.set.vib)buzz(30);if(k==='notif'&&S.set.notif&&window.dsNotifAsk)dsNotifAsk().then(ok=>s.classList.toggle('on',ok));});
  $('stPriv').onclick=()=>{location.href='privacy.html';};
  $('stReset').onclick=()=>{const b=$('stReset');if(b.dataset.c){localStorage.clear();location.reload();}else{b.dataset.c=1;b.textContent='Tap again to erase everything';}};
  $('stDone').onclick=()=>ov.classList.add('hidden');}
