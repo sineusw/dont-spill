@@ -272,7 +272,7 @@ function resolve(res){phase='result';phT=0;flash=res;const pace=rate();buzz&&buz
 function after(){if(run.mode==='duo'){if(run.duo.turn===0)return duoTurn(1);const L=run.duo.lives;if(L[0]<=0||L[1]<=0)return endDuo();return intro();}if(run.lives<=0||(run.mode==='vs'&&run.botLives<=0))return endRun();intro();}
 // ---------- loop ----------
 let lastT=performance.now();
-function frame(now){const dt=Math.min(.033,(now-lastT)/1000);lastT=now;if(phase==='off')return;T+=dt;phT+=dt;
+function frame(now){const dt=Math.min(.033,(now-lastT)/1000);lastT=now;if(phase==='off')return;if(paused){requestAnimationFrame(frame);return;}T+=dt;phT+=dt;
  if(phase==='intro'){if(!gs.tut&&phT>Math.max(2,3/rate()))goPlay();}
  else if(phase==='play'){left-=dt;let r=cur.upd(gs,dt)||gs.res;if(!r&&left<=0)r=cur.endWin?'win':'fail';if(r)resolve(r);}
  else if(phase==='result'){if(phT>(run.mode==='vs'||run.mode==='duo'?1.9:1.5))after();}
@@ -327,7 +327,17 @@ start.insertBefore(modes,firstRow);
 const ov=mk(`<div id="sOv" class="ov scroll hidden" style="z-index:6;justify-content:center;background:rgba(20,10,25,.985)"></div>`);document.body.appendChild(ov);
 function show(html){ov.classList.remove('endbg');ov.innerHTML=html;ov.classList.remove('hidden');}
 function hide(){ov.classList.add('hidden');ov.classList.remove('endbg');}
-const goMenu=()=>{hide();sc.style.display='none';phase='off';state='menu';renderMenu();start.classList.remove('hidden');};
+const goMenu=()=>{paused=0;pzBtn.style.display='none';hide();sc.style.display='none';phase='off';state='menu';renderMenu();start.classList.remove('hidden');};
+// ---------- pause / home during a shift ----------
+let paused=0;const pzBtn=document.createElement('button');pzBtn.id='pzBtn';pzBtn.innerHTML='<span style="display:inline-block;width:5px;height:18px;background:#fff;border-radius:2px;margin:0 2.5px"></span><span style="display:inline-block;width:5px;height:18px;background:#fff;border-radius:2px;margin:0 2.5px"></span>';pzBtn.setAttribute('aria-label','Pause');pzBtn.style.cssText='position:fixed;z-index:6;top:max(10px,env(safe-area-inset-top));left:12px;width:48px;height:48px;border-radius:50%;padding:0;margin:0;font-size:22px;background:rgba(26,18,32,.85);border:2px solid #ffd23f;color:#fff;box-shadow:0 4px 0 #0c0810;display:none';document.body.appendChild(pzBtn);
+setInterval(()=>{pzBtn.style.display=state==='shift'&&!paused&&['intro','play','result','pass'].includes(phase)&&ov.classList.contains('hidden')?'block':'none';},250);
+pzBtn.addEventListener('pointerdown',e=>e.stopPropagation());
+pzBtn.onclick=()=>{if(paused||phase==='off')return;paused=1;ptr.down=0;window.dsMusicOff&&dsMusicOff();const sc2=run.score||0,est=run.mode==='duo'?0:Math.floor(sc2/15);
+ show(`<div class="lbl">PAUSED</div><h1 style="font-size:40px;margin:0">ON BREAK</h1><div class="card" style="font-size:16px;line-height:1.5">Score so far: <b>${sc2}</b>${est?`<br>You keep about <b style="color:#7cff6b">$${est}+</b> if you head home`:''}</div>
+ <button id="pzGo" class="wide" style="width:100%;max-width:320px">▶ RESUME</button><button id="pzHome" class="ghost" style="width:100%;max-width:320px">🏠 HOME · KEEP MY EARNINGS</button>`);
+ $('pzGo').onclick=()=>{hide();paused=0;lastT=performance.now();};
+ $('pzHome').onclick=()=>{hide();paused=0;if(run.mode==='duo'||run.mode==='vs'&&!run.cleared){goMenu();return;}endRun();goMenu();};};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='shift'&&phase==='play'&&!paused)pzBtn.onclick();});
 function launch(mode,diff,rush,seed,target){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
  hide();start.classList.add('hidden');state='shift';sc.style.display='block';rs();newRun(mode,diff,seed||(Math.random()*1e9|0));run.target=target||0;run.rush=!!(rush&&window.dsRush&&window.dsRush());bag=[];intro();lastT=performance.now();requestAnimationFrame(frame);}
 function howTo(go){if(S.smTut)return go();show(`<div class="lbl">HOW SHIFT MODE WORKS</div><h1 style="font-size:36px">QUICK<br>ORDERS</h1><div class="card" style="font-size:16px;line-height:1.5">⚡ Short mini-games, one after another<br>📋 Each one shows what to do before it starts<br>✅ Win = points &nbsp; ❌ Fail = lose a ❤️<br>❤️❤️❤️ 3 lives · it slowly speeds up<br>🐢 First time on each game = practice speed</div><button id="htGo">GOT IT</button>`);$('htGo').onclick=()=>{S.smTut=1;save();go();};}
