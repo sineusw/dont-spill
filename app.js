@@ -22,6 +22,10 @@ function musicOn(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext
 function musicOff(){if(mT)clearInterval(mT);mT=null;if(mG){mG.disconnect();mG=null;}}
 window.dsMusicOff=musicOff;
 document.addEventListener('pointerdown',()=>{if(S.set.music&&!mG)musicOn();},{once:false,capture:true});
+try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
+// start music right away (the iPhone app allows audio without a tap; the web version starts on first tap)
+setTimeout(()=>{if(S.set.music)musicOn();if(AC&&AC.state!=='running'&&!NAT){musicOff();}},300);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.set.music)setTimeout(musicOn,200);});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)musicOff();});
 // ---- settings screen
 const css=document.createElement('style');css.textContent=`#gear{position:fixed;top:max(10px,env(safe-area-inset-top));right:12px;z-index:8;width:44px;height:44px;border-radius:50%;padding:0!important;margin:0!important;font-size:22px!important;background:rgba(26,18,32,.8)!important;box-shadow:0 4px 0 #0c0810!important;border:2px solid #ffd23f}
