@@ -354,7 +354,7 @@ function endRun(){phase='off';const r=run,prev={rank:S.rank};
  if(r.mode!=='vs')subUI(r);sc.style.display='none';}
 function drawPv(cv2,fn,w=140,h=120){const d=Math.min(devicePixelRatio||1,2);cv2.width=w*d;cv2.height=h*d;cv2.style.width=w+'px';cv2.style.height=h+'px';const sv=C;C=cv2.getContext('2d');C.scale(d,d);try{fn();}finally{C=sv;}}
 // ---------- leaderboard ----------
-const API='/api/scores';
+const API=(location.protocol.startsWith('http')&&location.hostname.endsWith('vercel.app')?'':'https://dont-spill-rho.vercel.app')+'/api/scores';
 function localLB(board){S.lb=S.lb||{};return S.lb[board]||[];}
 function localAdd(board,e){S.lb=S.lb||{};const a=(S.lb[board]||[]).concat(e).sort((a,b)=>b.score-a.score).slice(0,20);S.lb[board]=a;save();}
 async function fetchLB(board){try{const r=await fetch(API+'?board='+board+'&day='+dayKey(),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();return{list:j.list||[],online:1};}catch(e){return{list:localLB(board==='daily'?'daily-'+dayKey():'all'),online:0};}}
