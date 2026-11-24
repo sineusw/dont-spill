@@ -1,6 +1,6 @@
 // ===== DON'T SPILL · native bridge (haptics), settings, music =====
 (()=>{
-S.set=Object.assign({sfx:1,music:1,vib:1},S.set||{});
+S.set=Object.assign({sfx:1,music:1,vib:1,notif:0},S.set||{});
 const CAP=window.Capacitor,NAT=CAP&&CAP.isNativePlatform&&CAP.isNativePlatform(),HP=NAT&&CAP.Plugins&&CAP.Plugins.Haptics;
 // ---- haptics: native on iPhone, vibrate API elsewhere
 const _snd=window.snd,_noise=window.noise;
@@ -20,6 +20,7 @@ function sched(){if(!AC||!mG)return;const now=AC.currentTime;while(nextT<now+.3)
 let nextT=0;
 function musicOn(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){return;}if(mG||!S.set.music)return;mG=AC.createGain();mG.gain.value=.55;mG.connect(AC.destination);nextT=AC.currentTime+.05;mT=setInterval(sched,100);}
 function musicOff(){if(mT)clearInterval(mT);mT=null;if(mG){mG.disconnect();mG=null;}}
+window.dsMusicOff=musicOff;
 document.addEventListener('pointerdown',()=>{if(S.set.music&&!mG)musicOn();},{once:false,capture:true});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)musicOff();});
 // ---- settings screen
@@ -31,12 +32,12 @@ const gear=document.createElement('button');gear.id='gear';gear.textContent='⚙
 const syncGear=()=>gear.style.display=$('start').classList.contains('hidden')?'none':'block';setInterval(syncGear,300);
 const ov=document.createElement('div');ov.className='ov scroll hidden';ov.style.zIndex=9;document.body.appendChild(ov);
 function openSet(){const row=(k,l)=>`<div class="tg">${l}<div class="sw ${S.set[k]?'on':''}" data-k="${k}"></div></div>`;
- ov.innerHTML=`<div class="lbl">SETTINGS</div>${row('sfx','🔊 Sound effects')}${row('music','🎵 Music')}${row('vib','📳 Vibration')}
+ ov.innerHTML=`<div class="lbl">SETTINGS</div>${row('sfx','🔊 Sound effects')}${row('music','🎵 Music')}${row('vib','📳 Vibration')}${NAT?row('notif','🔔 Rush reminders'):''}
  <button class="ghost" id="stPriv" style="width:100%;max-width:320px;margin:0">Privacy Policy</button>
  <button class="ghost" id="stReset" style="width:100%;max-width:320px;margin:0;color:#ff8a7a">Reset progress</button>
  <div style="font-size:12px;opacity:.6">Don't Spill v1.0 · Petty Games Studio</div><button id="stDone">DONE</button>`;
  ov.classList.remove('hidden');
- ov.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{const k=s.dataset.k;S.set[k]=S.set[k]?0:1;save();s.classList.toggle('on',!!S.set[k]);if(k==='music')S.set.music?musicOn():musicOff();if(k==='vib'&&S.set.vib)buzz(30);});
+ ov.querySelectorAll('.sw').forEach(s=>s.onclick=()=>{const k=s.dataset.k;S.set[k]=S.set[k]?0:1;save();s.classList.toggle('on',!!S.set[k]);if(k==='music')S.set.music?musicOn():musicOff();if(k==='vib'&&S.set.vib)buzz(30);if(k==='notif'&&S.set.notif&&window.dsNotifAsk)dsNotifAsk().then(ok=>s.classList.toggle('on',ok));});
  $('stPriv').onclick=()=>{location.href='privacy.html';};
  $('stReset').onclick=()=>{const b=$('stReset');if(b.dataset.c){localStorage.clear();location.reload();}else{b.dataset.c=1;b.textContent='Tap again to erase everything';}};
  $('stDone').onclick=()=>ov.classList.add('hidden');}

@@ -116,12 +116,12 @@ const dstr=d=>d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(),today=()=>dst
 let S={xp:0,rank:1,shift:1,tab:{tables:1,waiter:0,host:0,bartender:0,busboy:0},decor:[],last:Date.now(),coins:0,best:{},own:['classic','g_classic'],outfit:'classic',glass:'classic',rest:0,day:'',goals:[],streak:0,lastDay:''};
 try{Object.assign(S,JSON.parse(localStorage.getItem('ds_save')||'{}'))}catch(e){}
 if(!S.best.diner&&best)S.best.diner=best;
-const UPS=[{k:'tables',name:'Tables',max:8,base:50,g:1.6,eff:l=>'$'+(l*2)+'/min idle'},{k:'waiter',name:'Waiters',max:5,base:120,g:1.8,eff:l=>'$'+(l*6)+'/min idle'},{k:'host',name:'Host',max:5,base:150,g:1.9,eff:l=>'+'+(l*10)+'% tips'},{k:'bartender',name:'Bartender',max:5,base:200,g:1.9,eff:l=>'steadier stack Lv'+l},{k:'busboy',name:'Busboy',max:5,base:180,g:1.9,eff:l=>'-'+(l*18)+'% wet floors'}];
+const UPS=[{k:'tables',name:'Tables',max:8,base:50,g:1.45,eff:l=>'$'+(l*2)+'/min idle'},{k:'waiter',name:'Waiters',max:5,base:120,g:1.8,eff:l=>'$'+(l*6)+'/min idle'},{k:'host',name:'Host',max:5,base:150,g:1.9,eff:l=>'+'+(l*10)+'% tips'},{k:'bartender',name:'Bartender',max:5,base:200,g:1.9,eff:l=>'steadier stack Lv'+l},{k:'busboy',name:'Busboy',max:5,base:180,g:1.9,eff:l=>'-'+(l*18)+'% wet floors'}];
 const DECOR=[{k:'plants',name:'Plants',cost:80},{k:'lights',name:'String Lights',cost:150},{k:'neon',name:'Neon Sign',cost:300},{k:'jukebox',name:'Jukebox',cost:500},{k:'fountain',name:'Fountain',cost:900}];
 const boost=()=>1+.1*S.tab.host+.05*S.decor.length+(has('cash')?.25:0),rateMin=()=>S.tab.tables*2+S.tab.waiter*6+(window.roomRate?window.roomRate():0);
-const pending=()=>Math.floor(Math.min(rateMin()*180,(Date.now()-S.last)/60000*rateMin()));
+const pending=()=>Math.floor(Math.min(rateMin()*480,(Date.now()-S.last)/60000*rateMin()));
 const upCost=u=>Math.round(u.base*Math.pow(u.g,S.tab[u.k]-(u.k==='tables'?1:0)));
-function renderBuild(){$('wallet3').textContent='$'+S.coins;$('collect').textContent='COLLECT $'+pending();$('rate').textContent='Earning $'+rateMin()+'/min while you\'re away (holds up to 3 hrs) · Tips boost +'+Math.round((boost()-1)*100)+'%';
+function renderBuild(){$('wallet3').textContent='$'+S.coins;$('collect').textContent='COLLECT $'+pending();$('rate').textContent='Earning $'+rateMin()+'/min while you\'re away (holds up to 8 hrs) · Tips boost +'+Math.round((boost()-1)*100)+'%';
  $('ups').innerHTML=(bTab==='decor'?'':UPS.map(u=>{const l=S.tab[u.k],mx=l>=u.max,c=upCost(u);return `<div class="card bk"><div style="flex:1"><b>${u.name}</b> <small>Lv ${l}/${u.max}</small><div style="font-size:12px;opacity:.85">${u.eff(l)}${mx?'':' → '+u.eff(l+1)}</div></div><button data-u="${u.k}" style="font-size:16px;padding:10px 14px;margin:0;${!mx&&S.coins<c?'opacity:.5':''}">${mx?'MAX':'$'+c}</button></div>`}).join(''))
  +(bTab!=='decor'?'':DECOR.map(d=>{const own=S.decor.includes(d.k);return `<div class="card bk"><div style="flex:1"><b>${d.name}</b><div style="font-size:12px;opacity:.85">Decor · +5% tips</div></div><button data-d="${d.k}" style="font-size:16px;padding:10px 14px;margin:0;${!own&&S.coins<d.cost?'opacity:.5':''}">${own?'OWNED':'$'+d.cost}</button></div>`}).join(''));
  $('tStaff').className=bTab==='decor'?'ghost':'';$('tDecor').className=bTab==='decor'?'':'ghost';}
@@ -512,4 +512,6 @@ renderMenu();
 <script src="build.js"></script>
 <script src="extras.js"></script>
 <script src="app.js"></script>
+<script src="native.js"></script>
+<script src="tour.js"></script>
 </body></html>

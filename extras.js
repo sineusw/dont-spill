@@ -51,7 +51,7 @@ async function openLB2(board='all'){const ov=$('sOv');dsShow('<div style="color:
  ${rest.map((e,i)=>`<div class="lrow ${e.name===me?'me':''}"><span class="rk">${i+4}</span><span class="av" style="background:${avc(e.name)}">${esc(e.name[0].toUpperCase())}</span><span class="n">${esc(e.name)}</span><span style="color:#ffd23f">${e.score}</span></div>`).join('')||(list.length?'':'<div style="color:#fff;opacity:.8">No scores yet. Be the first!</div>')}
  <div class="lrow me"><span class="rk">${myRank||'—'}</span><span class="av" style="background:${me?avc(me):'#3a2a48'}">${me?esc(me[0].toUpperCase()):'?'}</span><span class="n">${me?esc(me)+' (you)':'You'}</span><span style="color:#ffd23f">${myBest}</span></div>
  ${online?'':'<div style="font-size:11px;color:#fff;opacity:.6">Showing scores on this phone until the online board is connected.</div>'}
- <button class="ghost" id="lbBk" style="margin:0">BACK</button>`);
+ ${window.gcShow?'<button class="ghost" id="lbGC" style="margin:0">🎮 GAME CENTER</button>':''}<button class="ghost" id="lbBk" style="margin:0">BACK</button>`);if($('lbGC'))$('lbGC').onclick=()=>gcShow();
  ov.style.background='radial-gradient(circle at 50% 15%,#2d4a96,#141a3a 55%,#0c0f1e)';ov.style.justifyContent='flex-start';ov.style.paddingTop='clamp(14px,3vh,30px)';
  $('lbA').onclick=()=>openLB2('all');$('lbD').onclick=()=>openLB2('daily');$('lbBk').onclick=()=>{ov.style.background='rgba(20,10,25,.985)';ov.style.justifyContent='center';ov.style.paddingTop='';dsHide();};}
 $('lbBtn').onclick=()=>openLB2('all');

@@ -1,0 +1,10 @@
+{
+  "name": "petty-game-center",
+  "version": "1.0.0",
+  "description": "Minimal Game Center plugin for Don't Spill",
+  "license": "MIT",
+  "main": "index.js",
+  "files": ["ios/", "PettyGameCenter.podspec", "index.js"],
+  "capacitor": { "ios": { "src": "ios" } },
+  "peerDependencies": { "@capacitor/core": ">=7.0.0" }
+}
