@@ -47,21 +47,26 @@ function cGlass(x,y,s,c='#ff7a3c',fill=.8,rot=0){C.save();C.translate(x,y);C.rot
 function cTable(x,y,s){blob(x+4,y+s*.35,s,s*.32,'rgba(0,0,0,.2)',0);C.fillStyle='#6b3d22';C.fillRect(x-s*.08,y,s*.16,s*.4);blob(x,y,s,s*.34,'#fff');blob(x,y,s*.75,s*.22,'#ff5a3c',3);}
 function kidS(x,y,s,c){blob(x,y+s*.95,s*.5,s*.14,'rgba(0,0,0,.25)',0);C.fillStyle=c;rrect(-s*.4+x,y,s*.8,s*.8,s*.25);C.fill();ink();blob(x,y-s*.3,s*.45,s*.42,'#c68642');eyes(x,y-s*.36,s*.42,'calm');mouth(x,y-s*.08,s*.42,'happy');C.fillStyle=c;C.beginPath();C.arc(x,y-s*.5,s*.45,Math.PI,TAU);C.fill();ink(3);}
 function coinS(x,y,s,sp=0){const k=Math.abs(Math.cos(sp));blob(x,y,s*k+2,s,'#ffd23f',4);C.fillStyle='#b8860b';C.font=`900 ${s}px system-ui`;C.textAlign='center';C.textBaseline='middle';if(k>.4)C.fillText('$',x,y+1);}
-function bg(c1,c2){const g=C.createLinearGradient(0,0,0,SH);g.addColorStop(0,c2);g.addColorStop(1,c1);C.fillStyle=g;C.fillRect(0,0,SW,SH);C.fillStyle='rgba(255,255,255,.07)';for(let i=-SH;i<SW;i+=56){C.beginPath();C.moveTo(i,0);C.lineTo(i+22,0);C.lineTo(i+22+SH*.5,SH);C.lineTo(i+SH*.5,SH);C.fill();}}
+function bg(c1,c2){const g=C.createLinearGradient(0,0,0,SH);g.addColorStop(0,c2);g.addColorStop(1,c1);C.fillStyle=g;C.globalAlpha=.8;C.fillRect(0,0,SW,SH);C.globalAlpha=1;C.fillStyle='rgba(255,255,255,.07)';for(let i=-SH;i<SW;i+=56){C.beginPath();C.moveTo(i,0);C.lineTo(i+22,0);C.lineTo(i+22+SH*.5,SH);C.lineTo(i+SH*.5,SH);C.fill();}}
 // ---------- lines ----------
 const ROAST={
  intro:["Faster. The kitchen's watching.","Table 7 has a coupon. Pray for us.","I've seen sloths serve faster.","Don't. Mess. This. Up.","You call that hustle?","Move like rent is due. Because it is."],
  win:["Fine. That was adequate.","Don't let it go to your head.","Okay, who are you and what did you do with the old you?","Look at you. Barely competent.","The customers didn't cry. Progress."],
- fail:{swat:["The fly ate better than our customers."],sort:["Cups in the plate bin. Dishwasher is crying."],ketchup:["Ketchup on the FLOOR. Again."],bell:["Wrong time! The chef threw a spoon."],count:["Can't count? Great for a waiter."],sushi:["That was not the order. At all."],pizza:["Those aren't slices, those are crimes."],memory:["You forgot the order. Write it down!"],shake:["That shake is still ice cubes."],swipe:["Wrong way! That check went in the trash."],wipe:["Still sticky. Customers noticed.","You smeared it. Artistically."],order:["They asked for fries. You brought ice cream.","Wrong order. Table 3 is posting about us."],tray:["The drink slid off. Physics is undefeated.","Steady hands? More like spaghetti hands."],flip:["Burnt. Smoke alarm says hi.","That pancake had potential."],run:["You hit a CHILD. With soup.","The floor is not a table."],stack:["That's not a stack. That's modern art.","Gravity: 1. You: 0."],pour:["Half foam. Half shame.","I asked for a drink, not a flood."],rush:["Table 4 left. With the silverware.","They waited. You forgot."],catch:["Butterfingers. Literal butter.","That glass had a family."],tip:["You tipped yourself an IOU. Genius.","That was a cockroach. You grabbed a cockroach."]},
+ fail:{wind:["The wind took it. And your dignity."],vip:["The VIP left. And took their friends."],swat:["The fly ate better than our customers."],sort:["Cups in the plate bin. Dishwasher is crying."],ketchup:["Ketchup on the FLOOR. Again."],bell:["Wrong time! The chef threw a spoon."],count:["Can't count? Great for a waiter."],sushi:["That was not the order. At all."],pizza:["Those aren't slices, those are crimes."],memory:["You forgot the order. Write it down!"],shake:["That shake is still ice cubes."],swipe:["Wrong way! That check went in the trash."],wipe:["Still sticky. Customers noticed.","You smeared it. Artistically."],order:["They asked for fries. You brought ice cream.","Wrong order. Table 3 is posting about us."],tray:["The drink slid off. Physics is undefeated.","Steady hands? More like spaghetti hands."],flip:["Burnt. Smoke alarm says hi.","That pancake had potential."],run:["You hit a CHILD. With soup.","The floor is not a table."],stack:["That's not a stack. That's modern art.","Gravity: 1. You: 0."],pour:["Half foam. Half shame.","I asked for a drink, not a flood."],rush:["Table 4 left. With the silverware.","They waited. You forgot."],catch:["Butterfingers. Literal butter.","That glass had a family."],tip:["You tipped yourself an IOU. Genius.","That was a cockroach. You grabbed a cockroach."]},
  over:["You're fired. Come back tomorrow.","Clean that up before the dinner rush.","I'm putting you on dish duty. Forever.","That's coming out of your paycheck."],
  botWin:["Chef-Bot nailed it. Show off.","The robot's making you look bad."],botFail:["Chef-Bot dropped it! Even robots crack.","Chef-Bot.exe has stopped working."]};
 // ---------- state ----------
 let T=0,run=null,ptr={x:0,y:0,down:0},phase='off',phT=0,flash='';
 const G={};
 const rate=()=>run?Math.min(2.2,1+(run.round-1)*.05):1;
-const sp=()=>rate()*(gs&&gs.tut?.7:1);
+const perks=()=>{if(!run||run.mode==='daily')return{lives:3,bar:0,save:0,host:1,decor:1};const t=S.tab;return{lives:3+(t.waiter>=1)+(t.waiter>=3),bar:t.bartender,save:(t.busboy>=1)+(t.busboy>=4),host:1+.1*t.host,decor:1+.05*S.decor.length};};
+const UNLOCK=[['run','stack','pour','catch','tip','order','flip','sort'],['swat','bell','wipe'],['shake','sushi','count'],['rush','tray'],['ketchup','memory'],['pizza','swipe']];
+const stN=()=>window.dsStars?window.dsStars():0;
+window.dsGameCount=()=>UNLOCK.slice(0,stN()+1).flat().length+(S.rooms&&S.rooms.patio.own?1:0)+(S.rooms&&S.rooms.vip.own?1:0);
+function pool(){if(run.mode==='daily')return UNLOCK.flat();const a=UNLOCK.slice(0,stN()+1).flat();if(S.rooms&&S.rooms.patio.own)a.push('wind');if(S.rooms&&S.rooms.vip.own)a.push('vip');return a;}
+const sp=()=>rate()*(gs&&gs.tut?.7:1)*(gs&&['pour','stack','shake'].includes(gs.k)?Math.max(.7,1-.06*perks().bar):1);
 function newRun(mode,diff){R=mode==='daily'?mulberry([...dayKey()].reduce((h,c)=>h*31+c.charCodeAt(0)>>>0,7)):Math.random;
- run={mode,diff,round:0,lives:3,score:0,streak:0,last:'',botLives:mode==='vs'?3:0,botScore:0,botRes:null,won:0,cleared:0};}
+ run={mode,diff,round:0,lives:3,score:0,streak:0,last:'',botLives:0,botScore:0,botRes:null,won:0,cleared:0};const pk2=perks();run.lives=run.max=pk2.lives;run.saves=pk2.save;if(mode==='vs')run.botLives=run.lives;}
 // ---------- mini-games ----------
 // each: name, hint, dur(base secs), endWin (survive = win), init, upd(dt)->'win'|'fail'|undefined, draw, tap(x,y)
 G.run={name:'DELIVERY RUN',hint:'DRAG to dodge the chaos!',dur:9,endWin:1,c:['#ff8a3d','#ffb35c'],
@@ -216,15 +221,35 @@ G.swipe={name:'SWIPE THE CHECKS',hint:"SWIPE the way the arrow points",dur:10,c:
  up(g,sx,sy,ex,ey){const dx=ex-sx,dy=ey-sy;if(Math.hypot(dx,dy)<40||g.res)return;const d=Math.abs(dx)>Math.abs(dy)?(dx>0?'R':'L'):(dy>0?'D':'U');if(d===g.d){g.n++;g.fly={d,t:.25};snd&&snd(700+g.n*90,.08,'triangle',.12);if(g.n>=g.need)g.res='win';else g.d=pk(['L','R','U','D']);}else g.res='fail';},
  draw(g){const ck=(x,y,d,a)=>{C.save();C.translate(x,y);C.globalAlpha=a;C.fillStyle='#fff';rrect(-90,-120,180,240,14);C.fill();ink(4);C.fillStyle='#ccc';for(let i=0;i<4;i++)C.fillRect(-60,-80+i*22,120,6);C.fillStyle=OL;C.font='900 22px system-ui';C.textAlign='center';C.fillText('TOTAL $42',0,95);C.rotate({R:0,D:Math.PI/2,L:Math.PI,U:-Math.PI/2}[d]);C.fillStyle='#ff5a3c';C.beginPath();C.moveTo(55,0);C.lineTo(5,-38);C.lineTo(5,-16);C.lineTo(-50,-16);C.lineTo(-50,16);C.lineTo(5,16);C.lineTo(5,38);C.closePath();C.fill();ink(4);C.restore();C.globalAlpha=1;};
   if(g.fly){const f=1-g.fly.t/.25,v={R:[1,0],L:[-1,0],U:[0,-1],D:[0,1]}[g.fly.d];ck(SW/2+v[0]*SW*f,SH*.5+v[1]*SH*f,g.fly.d,1-f);}ck(SW/2,SH*.5,g.d,1);bigText(g.n+' / '+g.need,SW/2,SH*.13,30,'#fff',0);}};
+
+function perkTxt(){if(run.mode==='daily')return ' (No perks today. Fair for everyone.)';const p=perks(),a=[];if(p.lives>3)a.push('❤️+'+(p.lives-3));if(p.save)a.push('🧹 '+p.save+' save');if(p.bar)a.push('🍸 slower pours');if(p.host>1)a.push('🙋 +'+Math.round((p.host-1)*100)+'% pts');return a.length?' Your staff: '+a.join(' · '):' Hire staff to get shift perks.';}
+G.wind=Object.assign({},G.catch,{name:'WINDY PATIO',hint:'DRAG to catch · the wind pushes glasses!',c:['#1f9e8c','#b8f0e6'],
+ init(g){G.catch.init(g);g.t2=R()*6;g.w=0;},
+ upd(g,dt){g.t2+=dt*.9;g.w=Math.sin(g.t2)*(70+30*sp());for(const o of g.gl)o.x+=g.w*dt;return G.catch.upd(g,dt);},
+ draw(g){G.catch.draw(g);C.strokeStyle='rgba(255,255,255,.55)';C.lineWidth=3;for(let i=0;i<8;i++){const y=(i*97+T*30)%SH,x=((T*g.w*4+i*131)%SW+SW)%SW;C.beginPath();C.moveTo(x,y);C.lineTo(x-Math.sign(g.w)*50,y);C.stroke();}bigText(g.w>0?'💨 →':'← 💨',SW/2,SH*.24,28,'#fff',0);}});
+function nv(g){g.want=pk(FOOD);const o=[g.want];while(o.length<4){const f=pk(FOOD);if(!o.includes(f))o.push(f);}g.op=shuf(o);g.pat=g.max=Math.max(1.4,2.6/sp());g.bad=-1;}
+G.vip={name:'VIP SERVICE',hint:'TAP what the VIP wants · FAST!',dur:12,c:['#7a2fd0','#e2c8ff'],
+ init(g){g.n=0;g.need=4;nv(g);},
+ upd(g,dt){g.pat-=dt;if(g.pat<=0){g.why='angry';return 'fail';}},
+ tap(g,x,y){if(g.res)return;g.op.forEach((f,i)=>{const bx=SW*(i%2?.68:.32),by=SH*(.6+Math.floor(i/2)*.17);if(Math.hypot(x-bx,y-by)<50){if(f===g.want){g.n++;snd&&snd(1200+g.n*80,.08,'triangle',.12);if(g.n>=g.need)g.res='win';else nv(g);}else{g.bad=i;g.res='fail';}}});},
+ draw(g){const f=g.pat/g.max,s=Math.min(SW,SH)*.1,x=SW*.3,y=SH*.3;blob(x,y,s,s*.95,'#c68642',5);C.fillStyle=OL;rrect(x-s*.8,y-s*.3,s*1.6,s*.4,s*.15);C.fill();C.fillStyle='rgba(255,255,255,.35)';C.fillRect(x-s*.6,y-s*.25,s*.3,s*.12);
+  C.fillStyle='#ffd23f';C.beginPath();C.moveTo(x-s*.7,y-s*.7);C.lineTo(x-s*.7,y-s*1.25);C.lineTo(x-s*.35,y-s*.95);C.lineTo(x,y-s*1.35);C.lineTo(x+s*.35,y-s*.95);C.lineTo(x+s*.7,y-s*1.25);C.lineTo(x+s*.7,y-s*.7);C.closePath();C.fill();ink(4);mouth(x,y+s*.45,s,f<.35?'mad':'calm');
+  C.fillStyle='#fff';rrect(SW*.5,SH*.18,SW*.42,100,20);C.fill();ink(4);emo(g.want,SW*.71,SH*.18+44,46);const bw=SW*.42-24;C.fillStyle='#eee';rrect(SW*.5+12,SH*.18+80,bw,10,5);C.fill();C.fillStyle=f>.5?'#2bb673':f>.25?'#ffd23f':'#ff3b30';rrect(SW*.5+12,SH*.18+80,bw*f,10,5);C.fill();
+  g.op.forEach((ff,i)=>{const bx=SW*(i%2?.68:.32),by=SH*(.6+Math.floor(i/2)*.17);plate(bx,by,46,g.bad===i?'#ffb3a8':'#fff');emo(ff,bx,by,40);});bigText('💎 '+g.n+' / '+g.need,SW/2,SH*.47,26,'#ffd23f',0);}};
+// rush shift button + game count on the menu
+setTimeout(()=>{const rb=document.createElement('button');rb.id='rushBtn';rb.className='mbtn hidden';rb.style.cssText='background:#ff5a3c;font-size:17px;padding:12px 10px;margin:0';rb.textContent='🔥 RUSH SHIFT · 3× PAY';$('smBtn').after(rb);rb.onclick=()=>howTo(()=>launch('shift',null,1));
+ const upd=()=>{rb.classList.toggle('hidden',!(window.dsRush&&window.dsRush()));if(window.dsGameCount)$('smBtn').innerHTML='⚡ SHIFT MODE <span style="font-size:12px;background:#1a1220;color:#ffd23f;border-radius:999px;padding:2px 7px;vertical-align:middle">'+window.dsGameCount()+'/22</span>';};
+ const rm=window.renderMenu;window.renderMenu=function(){rm();upd();};setInterval(upd,20000);upd();},0);
 const ORDER=['run','stack','pour','rush','catch','tip','wipe','order','tray','flip','swat','sort','ketchup','bell','count','sushi','pizza','memory','shake','swipe'];
 // ---------- flow ----------
 let cur=null,gs=null,dur=0,left=0,bag=[];
-function nextGame(){if(!bag.length){bag=ORDER.slice();for(let i=bag.length-1;i>0;i--){const j=R()*(i+1)|0;[bag[i],bag[j]]=[bag[j],bag[i]];}if(bag[0]===run.last)bag.push(bag.shift());}
+function nextGame(){if(!bag.length){bag=pool();for(let i=bag.length-1;i>0;i--){const j=R()*(i+1)|0;[bag[i],bag[j]]=[bag[j],bag[i]];}if(bag[0]===run.last)bag.push(bag.shift());}
  const dq=new URLSearchParams(location.search).get('g'),k=dq&&G[dq]?dq:bag.shift();run.last=k;cur=G[k];S.seen=S.seen||{};gs={k,tut:!S.seen[k]};cur.init(gs);dur=cl(cur.dur/Math.sqrt(rate())*(gs.tut?1.35:1),5,15);left=dur;}
-function intro(){run.round++;nextGame();phase='intro';phT=0;run.roast=run.round===1?(run.mode==='vs'?"Chef-Bot vs you. Loser washes dishes.":run.mode==='daily'?"Daily Shift. Same orders for everyone. Don't embarrass me.":"Shift Mode. Every order gets faster."):pk(ROAST.intro);}
+function intro(){run.round++;nextGame();phase='intro';phT=0;run.roast=run.round===1?(run.mode==='vs'?"Chef-Bot vs you. Loser washes dishes.":run.mode==='daily'?"Daily Shift. Same orders for everyone. Don't embarrass me.":(run.rush?'RUSH SHIFT! We\'re short-staffed. Triple pay.':'Shift Mode. Every order gets faster.')+perkTxt()):pk(ROAST.intro);}
 function resolve(res){phase='result';phT=0;flash=res;const pace=rate();
  if(gs.tut){S.seen[gs.k]=1;save();}
- if(res==='win'){run.streak++;const pts=Math.round((100*pace+left*25)*Math.min(2,1+run.streak*.1));run.score+=pts;run.cleared++;run.pts='+'+pts;[523,659,784].forEach((f,i)=>setTimeout(()=>snd&&snd(f,.12,'triangle',.14),i*70));buzz&&buzz(20);run.line=pk(ROAST.win);}
+ if(res==='win'){run.streak++;const pts=Math.round((100*pace+left*25)*Math.min(2,1+run.streak*.1)*perks().host*(gs.k==='vip'?2:gs.k==='wind'?1.5:1));run.score+=pts;run.cleared++;run.pts='+'+pts;[523,659,784].forEach((f,i)=>setTimeout(()=>snd&&snd(f,.12,'triangle',.14),i*70));buzz&&buzz(20);run.line=pk(ROAST.win);}
+ else if(run.saves>0){run.saves--;run.streak=0;run.pts='🧹 BUSBOY SAVE!';run.line='The busboy cleaned that up. You owe him.';snd&&snd(500,.2,'triangle',.12);}
  else{run.streak=0;run.lives--;run.pts='-1 ❤';noise&&noise(.3,.35);snd&&snd(180,.4,'sawtooth',.12,60);buzz&&buzz([60,30,60]);run.line=pk(ROAST.fail[gs.k]||ROAST.over);}
  if(run.mode==='vs'&&run.botLives>0){const d={easy:[.8,.12],normal:[.9,.08],hard:[.97,.05]}[run.diff];const ok=Math.random()<cl(d[0]-(pace-1)*d[1],.35,.99);run.botRes=ok;if(ok)run.botScore+=Math.round(100*pace+Math.random()*dur*20);else run.botLives--;}}
 function after(){if(run.lives<=0||(run.mode==='vs'&&run.botLives<=0))return endRun();intro();}
@@ -235,7 +260,7 @@ function frame(now){const dt=Math.min(.033,(now-lastT)/1000);lastT=now;if(phase=
  else if(phase==='play'){left-=dt;let r=cur.upd(gs,dt)||gs.res;if(!r&&left<=0)r=cur.endWin?'win':'fail';if(r)resolve(r);}
  else if(phase==='result'){if(phT>(run.mode==='vs'?1.9:1.5))after();}
  render();requestAnimationFrame(frame);}
-function hearts(x,y,n,c){for(let i=0;i<3;i++){C.font='24px system-ui';C.textAlign='left';C.globalAlpha=i<n?1:.25;C.fillText(c,x+i*26,y);}C.globalAlpha=1;}
+function hearts(x,y,n,c){for(let i=0;i<Math.max(3,run.max||3);i++){C.font='24px system-ui';C.textAlign='left';C.globalAlpha=i<n?1:.25;C.fillText(c,x+i*26,y);}C.globalAlpha=1;}
 function render(){const c=cur?cur.c:['#ff5a3c','#ff8a6a'];C.clearRect(0,0,SW,SH);
  if(phase==='intro'){bg('#ffd23f','#ffb000');const s=Math.min(SW,SH)*.16,pop=Math.min(1,phT*5);C.save();C.translate(SW/2,SH*.3);C.scale(pop,pop);manager(0,0,s,'mad');C.restore();
   C.fillStyle='#fff';const bw=Math.min(SW-30,360);rrect(SW/2-bw/2,SH*.47,bw,70,18);C.fill();ink();C.fillStyle=OL;C.font='700 16px system-ui';C.textAlign='center';C.textBaseline='middle';wrap(run.roast,SW/2,SH*.47+35,bw-24,20);
@@ -245,11 +270,11 @@ function render(){const c=cur?cur.c:['#ff5a3c','#ff8a6a'];C.clearRect(0,0,SW,SH)
   // timer bar + hud
   const f=cl(left/dur,0,1);C.fillStyle='#fff';rrect(14,14,SW-28,22,11);C.fill();ink(3);C.fillStyle=f>.3?'#2bb673':'#ff3b30';rrect(17,17,(SW-34)*f,16,8);C.fill();
   C.fillStyle=OL;C.font='900 18px system-ui';C.textAlign='left';C.textBaseline='alphabetic';hearts(16,64,run.lives,'❤️');C.textAlign='right';C.fillStyle='#fff';C.strokeStyle=OL;C.lineWidth=5;C.strokeText(run.score+'',SW-16,62);C.fillText(run.score+'',SW-16,62);
-  if(run.mode==='vs'){C.font='900 13px system-ui';C.textAlign='right';C.strokeText('CHEF-BOT '+run.botScore,SW-16,84);C.fillText('CHEF-BOT '+run.botScore,SW-16,84);hearts(SW-96,106,run.botLives,'💙');}
+  if(run.mode==='vs'){C.font='900 13px system-ui';C.textAlign='right';C.strokeText('CHEF-BOT '+run.botScore,SW-16,84);C.fillText('CHEF-BOT '+run.botScore,SW-16,84);hearts(SW-26*Math.max(3,run.max||3)-18,106,run.botLives,'💙');}
   if(phase==='result'){C.fillStyle='rgba(26,18,32,.45)';C.fillRect(0,0,SW,SH);const sc2=1+Math.max(0,.15-phT)*1.5;C.save();C.translate(SW/2,SH*.42);C.scale(sc2,sc2);bigText(flash==='win'?'NAILED IT!':'SPILLED!',0,0,Math.min(64,SW*.15),flash==='win'?'#7cff6b':'#ff5a3c');C.restore();bigText(run.pts,SW/2,SH*.52,30,'#fff',0);
    C.fillStyle='#fff';const bw=Math.min(SW-30,340);rrect(SW/2-bw/2,SH*.58,bw,52,14);C.fill();ink(3);C.fillStyle=OL;C.font='700 15px system-ui';C.textAlign='center';C.textBaseline='middle';wrap('"'+run.line+'"',SW/2,SH*.58+26,bw-20,18);
    if(run.mode==='vs'&&run.botRes!==null){bot(SW/2,SH*.8,40,run.botRes?'happy':'sad');bigText(run.botRes?'BOT: ✓':'BOT: ✗',SW/2,SH*.9,22,run.botRes?'#7cff6b':'#ff5a3c',0);}}}}
-function demo(k,x,y){const drag=['run','catch','wipe','tray','pizza','swipe'].includes(k),hold=k==='pour'||k==='ketchup',ph=T*2.2;let fx=x,fy=y,pr=0;
+function demo(k,x,y){const drag=['wind','run','catch','wipe','tray','pizza','swipe'].includes(k),hold=k==='pour'||k==='ketchup',ph=T*2.2;let fx=x,fy=y,pr=0;
  if(drag)fx=x+Math.sin(ph)*70;else if(hold){pr=Math.sin(ph)>0;}else{pr=(ph%1.4)<.3;fx=x+(k==='stack'?0:Math.sin(Math.floor(ph/1.4)*2.3)*60);}
  C.fillStyle='rgba(26,18,32,.55)';rrect(x-110,y-28,220,46,23);C.fill();if(drag){C.fillStyle='#fff';C.font='900 18px system-ui';C.textAlign='center';C.textBaseline='middle';C.fillText('◀    ▶',x,y-5);}
  if(pr){C.strokeStyle='#ffd23f';C.lineWidth=4;C.beginPath();C.arc(fx,y-8,20,0,TAU);C.stroke();}C.font='34px system-ui';C.textAlign='center';C.textBaseline='middle';C.fillText('👆',fx+4,fy+6+(pr?4:0));}
@@ -262,7 +287,7 @@ sc.addEventListener('pointermove',e=>{[ptr.x,ptr.y]=pos(e);});
 addEventListener('pointerup',e=>{const was=ptr.down&&!ptr.ign;ptr.down=0;ptr.ign=0;if(was&&phase==='play'&&cur.up){const r=sc.getBoundingClientRect();cur.up(gs,ptr.sx,ptr.sy,e.clientX-r.left,e.clientY-r.top);}});addEventListener('pointercancel',()=>ptr.down=0);
 addEventListener('keydown',e=>{if(phase==='play'&&e.code==='Space'){ptr.down=1;ptr.x=SW/2;ptr.y=SH/2;cur.tap&&cur.tap(gs,SW/2,SH/2);}});addEventListener('keyup',e=>{if(e.code==='Space')ptr.down=0;});
 // ---------- UI ----------
-const css=document.createElement('style');css.textContent=`.mbtn{width:100%;max-width:340px;font-size:20px}.pv{display:block}@media (max-height:720px){.pv{display:none}}.lbrow{display:flex;justify-content:space-between;padding:4px;border-bottom:1px solid rgba(255,255,255,.1);font-weight:700}.lbrow.me{color:#ffd23f}.tabs{display:flex;gap:8px}.tabs button{font-size:15px;padding:10px 18px;margin:0}.tabs button.off{background:#3a2a48;box-shadow:0 6px 0 #1e1428}@media (max-height:700px){#beatBanner{padding:6px 10px!important;font-size:13px}#beatBanner button{padding:6px 18px!important;margin-top:4px!important}}#beatBanner{background:#ff4fa3;border-radius:14px;padding:10px 14px;font-weight:900;max-width:340px;width:100%;box-sizing:border-box}#sOv.endbg,#over{background:radial-gradient(circle at 50% 22%,#6a2d96 0,#2a1440 45%,#160c1e 100%)!important}
+const css=document.createElement('style');css.textContent=`.mbtn{width:100%;max-width:340px;font-size:20px}.pv{display:block}@media (max-height:720px){.pv{display:none}}.lbrow{display:flex;justify-content:space-between;padding:4px;border-bottom:1px solid rgba(255,255,255,.1);font-weight:700}.lbrow.me{color:#ffd23f}.tabs{display:flex;gap:8px}.tabs button{font-size:15px;padding:10px 18px;margin:0}.tabs button.off{background:#3a2a48;box-shadow:0 6px 0 #1e1428}@media (max-height:700px){#rankCard>div:last-child{display:none}}@media (max-height:700px){#beatBanner{padding:6px 10px!important;font-size:13px}#beatBanner button{padding:6px 18px!important;margin-top:4px!important}}#beatBanner{background:#ff4fa3;border-radius:14px;padding:10px 14px;font-weight:900;max-width:340px;width:100%;box-sizing:border-box}#sOv.endbg,#over{background:radial-gradient(circle at 50% 22%,#6a2d96 0,#2a1440 45%,#160c1e 100%)!important}
 .endbox{display:flex;flex-direction:column;align-items:center;gap:clamp(5px,1.1vh,10px);width:100%;max-width:350px}
 .stamp{font:900 clamp(20px,3.6vh,28px) system-ui;color:#fff;background:#ff5a3c;padding:6px 18px;border-radius:12px;transform:rotate(-3deg);box-shadow:0 5px 0 #a8321e;border:3px solid #1a1220}.stamp.ok{background:#2bb673;box-shadow:0 5px 0 #1a7a4c}
 .bub{background:#fff;color:#1a1220;font:700 14px system-ui;padding:8px 12px;border-radius:14px;border:3px solid #1a1220;position:relative;max-width:300px}
@@ -282,8 +307,8 @@ const ov=mk(`<div id="sOv" class="ov scroll hidden" style="z-index:6;justify-con
 function show(html){ov.classList.remove('endbg');ov.innerHTML=html;ov.classList.remove('hidden');}
 function hide(){ov.classList.add('hidden');ov.classList.remove('endbg');}
 const goMenu=()=>{hide();sc.style.display='none';phase='off';state='menu';renderMenu();start.classList.remove('hidden');};
-function launch(mode,diff){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
- hide();start.classList.add('hidden');state='shift';sc.style.display='block';rs();newRun(mode,diff);bag=[];intro();lastT=performance.now();requestAnimationFrame(frame);}
+function launch(mode,diff,rush){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}
+ hide();start.classList.add('hidden');state='shift';sc.style.display='block';rs();newRun(mode,diff);run.rush=!!(rush&&window.dsRush&&window.dsRush());bag=[];intro();lastT=performance.now();requestAnimationFrame(frame);}
 function howTo(go){if(S.smTut)return go();show(`<div class="lbl">HOW SHIFT MODE WORKS</div><h1 style="font-size:36px">QUICK<br>ORDERS</h1><div class="card" style="font-size:16px;line-height:1.5">⚡ Short mini-games, one after another<br>📋 Each one shows what to do before it starts<br>✅ Win = points &nbsp; ❌ Fail = lose a ❤️<br>❤️❤️❤️ 3 lives · it slowly speeds up<br>🐢 First time on each game = practice speed</div><button id="htGo">GOT IT</button>`);$('htGo').onclick=()=>{S.smTut=1;save();go();};}
 $('smBtn').onclick=()=>howTo(()=>launch('shift'));
 $('dailyBtn').onclick=()=>{const d=dayKey(),done=S.dailyDay===d;show(`<div class="lbl">📅 DAILY SHIFT</div><h1 style="font-size:40px">${d}</h1><p>Same orders, same speed, for everyone today. Your best run goes on the daily board.</p>${done?`<p style="color:#7cff6b;font-weight:800">Today's best: ${S.dailyBest||0}</p>`:''}<button id="dGo">CLOCK IN</button><button class="ghost" id="dBack">BACK</button>`);$('dGo').onclick=()=>howTo(()=>launch('daily'));$('dBack').onclick=hide;};
@@ -292,7 +317,7 @@ $('vsBtn').onclick=()=>{show(`<div class="lbl">🤖 VS CHEF-BOT</div><canvas id=
  ov.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>howTo(()=>launch('vs',b.dataset.d)));$('vBack').onclick=hide;};
 // ---------- end of run ----------
 function endRun(){phase='off';const r=run,prev={rank:S.rank};
- const coins=Math.floor(r.score/15)+(r.mode==='vs'&&r.lives>0?150:0),xp=r.cleared*10+(r.mode==='vs'&&r.lives>0?40:0);S.coins+=coins;S.xp+=xp;const L=['+$'+coins+' to your wallet · +'+xp+' XP'];
+ const stm=r.mode==='daily'?1:1+.25*stN(),pm=perks().decor,rm=r.rush?3:1,coins=Math.round(Math.floor(r.score/15)*stm*pm*rm)+(r.mode==='vs'&&r.lives>0?150:0),xp=r.cleared*10+(r.mode==='vs'&&r.lives>0?40:0);S.coins+=coins;S.xp+=xp;const L=['+$'+coins+' to your wallet · +'+xp+' XP'];if(stm>1)L.push('⭐ x'+stm.toFixed(2)+' star bonus');if(rm>1)L.push('🔥 RUSH x3');
  while(S.rank<RANKS.length&&S.xp>=xpNeed(S.rank)){S.xp-=xpNeed(S.rank);S.rank++;L.push('⭐ RANK UP: '+RANKS[S.rank-1].n+'!');}
  S.smBest=S.smBest||0;let nb=0;if(r.mode!=='vs'&&r.score>S.smBest){S.smBest=r.score;nb=1;}
  if(r.mode==='daily'){const d=dayKey();if(S.dailyDay!==d){S.dailyDay=d;S.dailyBest=0;}if(r.score>S.dailyBest){S.dailyBest=r.score;L.push('New daily best!');}}
@@ -304,7 +329,7 @@ function endRun(){phase='off';const r=run,prev={rank:S.rank};
  <div class="rew">${rew}</div>${r.mode!=='vs'?`<div id="subBox" style="width:100%"></div>`:''}
  <button id="eAgain" class="wide">${r.mode==='vs'?'REMATCH':'CLOCK BACK IN'}</button><div class="erow"><button class="ghost" id="eShare">🔗 CHALLENGE</button><button class="ghost" id="eMenu">🏠 MENU</button></div></div>`);ov.classList.add('endbg');
  const hh=cl(SH*.16,70,140);drawPv($('endPv'),()=>r.mode==='vs'&&!win?bot(hh*.6,hh*.62,hh*.36,'happy'):manager(hh*.6,hh*.42,hh*.34,win?'happy':'mad'),hh*1.2,hh);
- $('eAgain').onclick=()=>launch(r.mode,r.diff);$('eMenu').onclick=goMenu;$('eShare').onclick=()=>shareScore(r);
+ $('eAgain').onclick=()=>launch(r.mode,r.diff,r.rush);$('eMenu').onclick=goMenu;$('eShare').onclick=()=>shareScore(r);
  if(r.mode!=='vs')subUI(r);sc.style.display='none';}
 function drawPv(cv2,fn,w=140,h=120){const d=Math.min(devicePixelRatio||1,2);cv2.width=w*d;cv2.height=h*d;cv2.style.width=w+'px';cv2.style.height=h+'px';const sv=C;C=cv2.getContext('2d');C.scale(d,d);try{fn();}finally{C=sv;}}
 // ---------- leaderboard ----------

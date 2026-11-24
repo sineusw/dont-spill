@@ -22,6 +22,7 @@ const SKIN=['#8d5524','#c68642','#f1c27d','#5c3a1e','#e0ac69'],HAIR=['#2a1a2e','
 // ---------- stars ----------
 const prog=()=>Object.values(S.tab).reduce((a,b)=>a+b,0)-1+S.decor.length;
 const STAR=[2,6,11,17,24];const stars=()=>STAR.filter(n=>prog()>=n).length;
+window.dsStars=()=>stars();const NEWG=[3,3,2,2,2];
 const starStr=n=>'★'.repeat(n)+'☆'.repeat(5-n);
 // ---------- runtime ----------
 let bubs={},fly=[],fx=[],pops=[],celeb=null,sig='';
@@ -119,7 +120,7 @@ function stepGuests(T){const dt=1/60,sp=isRush()?1.8:1;for(const t of T){const g
  else if(g.st==='out'){g.p+=dt*sp/2.6;if(g.p>=1){g.st='empty';g.t=rand(1,4);}}}}
 function walkers(T){const out=[];for(const t of T){const g=guest(t);if(g.st!=='in'&&g.st!=='out')continue;[0,1].forEach(j=>{const k=g.party[j];if(k==null)return;const d=j?1:-1,f=g.st==='in'?g.p:1-g.p,e=f<.5?2*f*f:1-Math.pow(-2*f+2,2)/2,lag=j*.08;
   const ff=cl(e-lag,0,1),u=lerp(ENT.u,t.u+d*.13,ff),v=lerp(ENT.v,t.v+.02,ff),p=P(u,v);out.push({y:p.y,f:()=>{shadow(p.x,p.y+14*p.s*.85,12*p.s,4*p.s);person(p.x,p.y+Math.abs(Math.sin(BT*9+j))*-3,p.s*.85,k,'',0,0);}});});}return out;}
-const rand=(a,b)=>a+Math.random()*(b-a);
+const rand=(a,b)=>a+Math.random()*(b-a);window.dsRush=isRush;
 function buyRT(r){const c=rtCost(r);if(S.rooms[r].tables>=8||S.coins<c)return;S.coins-=c;S.rooms[r].tables++;save();snd(880,.1,'triangle',.15);renderBuild();}
 function entrance(){const p=P(1.3,.62);cx.fillStyle='rgba(122,42,50,.35)';cx.beginPath();cx.ellipse(p.x+20,p.y+6,26*p.s,9*p.s,0,0,TAU);cx.fill();cx.fillStyle='#fff';cx.font=`900 ${10*p.s}px system-ui`;cx.textAlign='center';cx.fillText('WELCOME',p.x+20,p.y+9);}
 function roomPills(){const y=bot-46,items=[['main','🏠'],['patio','🌴'],['vip','💎']];let x=10;for(const [r,ic] of items){const own=r==='main'||S.rooms[r].own,on=S.view===r,w=46;cx.fillStyle=on?'#ffd23f':'rgba(26,18,32,.75)';cx.beginPath();cx.roundRect(x,y,w,30,15);cx.fill();ink(2.5);cx.font='16px system-ui';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(own?ic:'🔒',x+w/2,y+15);cx.textBaseline='alphabetic';hits.push({x:x+w/2,y:y+15,r:22,room:own?r:null,lock:!own});x+=w+6;}}
@@ -185,14 +186,14 @@ const css=document.createElement('style');css.textContent=`#build{background:lin
 #start{background:linear-gradient(180deg,rgba(20,10,25,.25),rgba(20,10,25,.6) 35%,rgba(20,10,25,.88))!important}`;document.head.appendChild(css);
 window.renderBuild=function(){const st=stars(),pr=prog(),nx=STAR[st],pv=st?STAR[st-1]:0;
  const sg=JSON.stringify(S.tab)+S.decor.join();if(sig&&sig!==sg){confetti(W/2,(bot||H*.4)*.5,50);pops.push({x:W/2,y:(bot||H*.4)*.45,t:'UPGRADED!',l:1.2,c:'#7cff6b'});}sig=sg;
- S.starAw=S.starAw||0;if(st>S.starAw){const bonus=st*100;S.coins+=bonus;S.starAw=st;save();celeb={t:'⭐ '+st+'-STAR DINER!',s:'+$'+bonus+' bonus',l:3};confetti(W/2,(bot||H*.4)*.4,90);[523,659,784,1047].forEach((f,i)=>setTimeout(()=>snd(f,.2,'triangle',.14),i*110));}
+ S.starAw=S.starAw||0;if(st>S.starAw){const bonus=st*100;S.coins+=bonus;S.starAw=st;save();celeb={t:'⭐ '+st+'-STAR DINER!',s:'+$'+bonus+' · '+NEWG[st-1]+' new mini-games!',l:3};confetti(W/2,(bot||H*.4)*.4,90);[523,659,784,1047].forEach((f,i)=>setTimeout(()=>snd(f,.2,'triangle',.14),i*110));}
  $('wallet3').textContent='$'+S.coins;const pd=pending();$('collect').textContent=pd>0?'COLLECT $'+pd:'COLLECTED ✓';$('collect').classList.toggle('glow',pd>0);
- $('rate').outerHTML=`<div id="rate" class="starbar"><span>${starStr(st)}</span><div class="tr"><div style="width:${nx?Math.round((pr-pv)/(nx-pv)*100):100}%"></div></div><span>${nx?(nx-pr)+' to next ★':'MAX'}</span></div>`;
+ $('rate').outerHTML=`<div id="rate" class="starbar"><span>${starStr(st)}</span><div class="tr"><div style="width:${nx?Math.round((pr-pv)/(nx-pv)*100):100}%"></div></div><span>${nx?(nx-pr)+' to ★'+(st+1)+' · +'+NEWG[st]+' games':'ALL GAMES'}</span></div>`;
  const card=(k,name,lv,mx,eff,cost,isD)=>{const max=isD?lv:lv>=mx,can=!max&&S.coins>=cost;return `<button class="ucard ${max?'max':can?'':'no'}" data-${isD?'d':'u'}="${k}"><span class="ic">${ICON[k]}</span><b>${name}</b>${isD?'<small>+5% tips · decor</small>':`<span class="pips">${Array.from({length:mx},(_,i)=>`<i class="${i<lv?'on':''}"></i>`).join('')}</span>`}${isD?'':`<small>${eff}</small>`}<span class="pr">${max?(isD?'OWNED':'MAX'):'$'+cost}</span></button>`;};
  if(!$('tRooms')){const tb=$('tStaff').parentNode;tb.insertAdjacentHTML('beforeend','<button id="tRooms" class="ghost" style="margin:0;font-size:14px;padding:8px 14px">ROOMS</button><button id="tStyle" class="ghost" style="margin:0;font-size:14px;padding:8px 14px">STYLE</button>');$('tRooms').onclick=()=>{bTab='rooms';renderBuild();};$('tStyle').onclick=()=>{bTab='style';renderBuild();};tb.querySelectorAll('button').forEach(b=>{b.style.padding='8px 12px';b.style.fontSize='13px';});}
  $('ups').className='ugrid';$('ups').style.cssText='';
  if(bTab==='rooms'||bTab==='style'){const C2=(attr,ic,name,mid,price,can,max)=>`<button class="ucard ${max?'max':can?'':'no'}" ${attr}><span class="ic">${ic}</span><b>${name}</b>${mid}<span class="pr">${price}</span></button>`;
-  $('ups').innerHTML=bTab==='rooms'?Object.entries(ROOMS).map(([r,R])=>{const o=S.rooms[r];if(!o.own)return C2(`data-r="${r}"`,R.ic,R.name,`<small>Unlock a new room<br>+$${R.per}/min per table · tips x${R.mult}</small>`,'$'+R.cost,S.coins>=R.cost,0);const mx=o.tables>=8,c=rtCost(r);return C2(`data-rt="${r}"`,R.ic,R.name,`<span class="pips">${Array.from({length:8},(_,i)=>`<i class="${i<o.tables?'on':''}"></i>`).join('')}</span><small>+1 table · +$${R.per}/min</small>`,mx?'MAX':'$'+c,S.coins>=c,mx);}).join('')+C2('data-go="main"','🏠','Main Room','<small>'+(S.view==='main'?'Viewing now':'Tap to view')+'</small>',S.view==='main'?'HERE':'GO',1,S.view==='main')
+  $('ups').innerHTML=bTab==='rooms'?Object.entries(ROOMS).map(([r,R])=>{const o=S.rooms[r];if(!o.own)return C2(`data-r="${r}"`,R.ic,R.name,`<small>New room + its own mini-game<br>+$${R.per}/min per table · tips x${R.mult}</small>`,'$'+R.cost,S.coins>=R.cost,0);const mx=o.tables>=8,c=rtCost(r);return C2(`data-rt="${r}"`,R.ic,R.name,`<span class="pips">${Array.from({length:8},(_,i)=>`<i class="${i<o.tables?'on':''}"></i>`).join('')}</span><small>+1 table · +$${R.per}/min</small>`,mx?'MAX':'$'+c,S.coins>=c,mx);}).join('')+C2('data-go="main"','🏠','Main Room','<small>'+(S.view==='main'?'Viewing now':'Tap to view')+'</small>',S.view==='main'?'HERE':'GO',1,S.view==='main')
   :Object.entries(THEMES).map(([k,T])=>{const own=S.themes.includes(k),on=S.theme===k;return C2(`data-th="${k}"`,T.ic,T.name,`<small>${on?'In use':own?'Tap to use':'New look for the main room'}</small>`,on?'USING':own?'OWNED':'$'+T.cost,own||S.coins>=T.cost,on);}).join('');
   ['tStaff','tDecor','tRooms','tStyle'].forEach(id=>$(id).className=(id==='t'+bTab[0].toUpperCase()+bTab.slice(1))?'':'ghost');return;}
  if($('tRooms')){$('tRooms').className='ghost';$('tStyle').className='ghost';}
