@@ -457,6 +457,7 @@ function draw(){if(state==='build')return buildScene();
 let last=performance.now();
 function loop(now){
  const dt=Math.min(.033,(now-last)/1000);last=now;
+ if(state==='shift'){requestAnimationFrame(loop);return;}
  if(state==='build')t+=dt;
  if(state==='play')update(dt);
  else if(state==='won'){wonT+=dt;t+=dt;updParts(dt);for(const q of pops){q.life-=dt;q.y-=50*dt;}pops=pops.filter(q=>q.life>0);if(bubble)bubble.life-=dt;if(wonT>1.6){state='over';finalize();showOver();}}
@@ -497,4 +498,5 @@ $('ups').onclick=buildClick;$('collect').onclick=()=>{const v=pending();if(v<=0)
 setInterval(()=>{if(state==='build')$('collect').textContent='COLLECT $'+pending();},2000);
 renderMenu();
 </script>
+<script src="shift.js"></script>
 </body></html>
