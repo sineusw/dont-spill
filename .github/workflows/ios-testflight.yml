@@ -1,0 +1,98 @@
+name: iOS TestFlight
+
+# Builds the iPhone app on GitHub's Macs and uploads it to TestFlight.
+# Needs 3 repo secrets (Settings → Secrets and variables → Actions):
+#   APP_STORE_CONNECT_API_KEY_ID      e.g. ABC123XYZ9
+#   APP_STORE_CONNECT_ISSUER_ID       the Issuer ID shown on the Integrations page
+#   APP_STORE_CONNECT_API_PRIVATE_KEY the whole AuthKey_XXXX.p8 file (pasted as-is, or base64)
+# The key must have the Admin role (cloud-managed signing, no certificates to manage).
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '*.js'
+      - '*.html'
+      - 'ios/**'
+      - 'plugins/**'
+      - 'assets/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'capacitor.config.json'
+      - '.github/workflows/ios-testflight.yml'
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    runs-on: macos-26
+    env:
+      TEAM_ID: FHGP486J8U
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app and sync iOS project
+        run: |
+          npm run build
+          npx cap sync ios
+
+      - name: Prepare App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+        run: |
+          test -n "$ASC_KEY_ID" || { echo "::error::Missing secret APP_STORE_CONNECT_API_KEY_ID"; exit 1; }
+          test -n "$ASC_ISSUER_ID" || { echo "::error::Missing secret APP_STORE_CONNECT_ISSUER_ID"; exit 1; }
+          test -n "$ASC_PRIVATE_KEY" || { echo "::error::Missing secret APP_STORE_CONNECT_API_PRIVATE_KEY"; exit 1; }
+          KEY_PATH="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          if printf '%s' "$ASC_PRIVATE_KEY" | grep -q "BEGIN PRIVATE KEY"; then
+            printf '%s\n' "$ASC_PRIVATE_KEY" > "$KEY_PATH"
+          else
+            printf '%s' "$ASC_PRIVATE_KEY" | base64 --decode > "$KEY_PATH"
+          fi
+          openssl pkey -in "$KEY_PATH" -noout
+          echo "AUTH_FLAGS=-allowProvisioningUpdates -authenticationKeyPath $KEY_PATH -authenticationKeyID $ASC_KEY_ID -authenticationKeyIssuerID $ASC_ISSUER_ID" >> "$GITHUB_ENV"
+
+      - name: Archive
+        run: |
+          BUILD_NUMBER=$((100 + GITHUB_RUN_NUMBER))
+          echo "Build number $BUILD_NUMBER"
+          xcodebuild archive \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            $AUTH_FLAGS \
+            CURRENT_PROJECT_VERSION=$BUILD_NUMBER
+
+      - name: Export and upload to TestFlight
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+            <key>uploadSymbols</key><true/>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            $AUTH_FLAGS
