@@ -465,9 +465,9 @@ function draw(){if(state==='build')return buildScene();
 
 // ---------- loop ----------
 let last=performance.now();
-function loop(now){
+function loop(now){requestAnimationFrame(loop);
  const dt=Math.min(.033,(now-last)/1000);last=now;
- if(state==='shift'){if(window.buildScene){cx.setTransform(DPR,0,0,DPR,0,0);buildScene(true);}requestAnimationFrame(loop);return;}
+ if(state==='shift'){if(window.buildScene){cx.setTransform(DPR,0,0,DPR,0,0);buildScene(true);}return;}
  if(state==='build')t+=dt;
  if(state==='play')update(dt);
  else if(state==='won'){wonT+=dt;t+=dt;updParts(dt);for(const q of pops){q.life-=dt;q.y-=50*dt;}pops=pops.filter(q=>q.life>0);if(bubble)bubble.life-=dt;if(wonT>1.6){state='over';finalize();showOver();}}
@@ -476,7 +476,7 @@ function loop(now){
   if(bubble){bubble.life-=dt;}
   if(dieT>1.3){if(!revived&&tips>0){state='revive';$('revive').classList.remove('hidden');}else{state='over';finalize();showOver();}}}
  if(!p){reset();}
- draw();requestAnimationFrame(loop);
+ try{draw();}catch(e){console.error(e);}
 }
 requestAnimationFrame(loop);
 

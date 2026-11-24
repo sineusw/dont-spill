@@ -203,7 +203,7 @@ function syncAgents(T){const sg=S.view+want().map(x=>x.join()).join('|');if(sim.
  want().forEach(([role,i])=>{const o=old.find(a=>a.role===role&&a.i===i&&!a.steps.length);const home=role==='host'?{u:SPOT.pod.u-.02,v:SPOT.pod.v+.08}:role==='bus'?{u:SPOT.bus.u+.1+i*.12,v:SPOT.bus.v+.1}:role==='runner'?{u:1.05,v:.12+i*.12}:{u:-.5+i*.38,v:.55};
   sim.ag.push(o?Object.assign(o,{home}):{role,i,u:home.u,v:home.v,home,steps:[],task:null,carry:null,act:'',hidden:0,k:role==='server'?i*2+1:role==='host'?2:role==='runner'?5+i:4,face:1,mv:0});});
  for(const tk of sim.tasks)if(tk.by&&!sim.ag.includes(tk.by)){tk.by=null;}}
-const CAN={server:['order','drink','food','clear','roll'],runner:['food'],bus:['clear','roll'],host:['seat']};
+const CAN={server:['order','drink','food','roll','clear'],runner:['food'],bus:['roll','clear'],host:['seat']};
 function pick(a){let list=CAN[a.role].slice();if(a.role==='server'){if(lvl('runner'))list=list.filter(x=>x!=='food');if(lvl('busboy'))list=list.filter(x=>x!=='clear'&&x!=='roll');}
  let best=null;for(const tk of sim.tasks){if(tk.by||!list.includes(tk.type))continue;if(tk.type==='drink'&&tk.q&&!tk.q.ready)continue;if(!best||list.indexOf(tk.type)<list.indexOf(best.type))best=tk;}
  if(best){best.by=a;a.task=best;a.steps=plan(a,best);}}
@@ -250,7 +250,7 @@ function busCart(x,y,s,n){shadow(x,y+4*s,24*s,6*s);cx.fillStyle='#9aa5b1';cx.beg
  cx.fillStyle='#3a6ea5';cx.beginPath();cx.roundRect(x-16*s,y-38*s,32*s,12*s,2*s);cx.fill();ink(1.5);
  for(let i=0;i<n;i++){const ox=-11+i*7;el(x+ox*s,y-39*s-i*1.5*s,5*s,2*s,'#fff',1);cx.fillStyle='rgba(220,235,245,.9)';cx.fillRect(x+(ox+2)*s,y-46*s-i*2*s,3*s,6*s);}
  if(n>=4){cx.fillStyle='#ff4f6b';cx.font=`900 ${9*s}px system-ui`;cx.textAlign='center';cx.fillText('FULL',x,y-52*s);}}
-function plan(a,tk){const t=tk.t,g=tk.g,S2=side(t),done=()=>{sim.tasks=sim.tasks.filter(x=>x!==tk);a.task=null;};
+function plan(a,tk){const t=tk.t,g=tk.g,S2=t?side(t):SPOT.busFront,done=()=>{sim.tasks=sim.tasks.filter(x=>x!==tk);a.task=null;};
  if(tk.type==='seat')return[{go:HOSTQ()},{until:()=>g.st==='arrive'&&g.atQ},{wait:1.8,act:'talk',g},{fn:()=>{g.st='walk';g.lead=a;a.trail=[];a.carry={type:'menu'};}},{go:{u:t.u,v:t.v+.2},slow:1},{fn:()=>{startSit(t,g);g.menus=0;a.moving={type:'menu'};a.carry=null;}},{wait:.7,act:'set',tt:t},{fn:()=>{a.moving=null;g.menus=1;done();}},{wait:.4,act:'wave'}];
  if(tk.type==='order')return[{go:S2},{fn:()=>{g.st='ordering';}},{wait:1.5,act:'write',tt:t},{fn:()=>{placeOrder(t,g);g.menus=0;done();}}];
  if(tk.type==='drink')return[{go:SPOT.bar},...(tk.make?[{wait:2.2,act:'make'}]:[]),{fn:()=>{const q=tk.q;a.grab={c:g.dc,x:q&&q.x||null,y:q&&q.y||null};if(q)sim.barQ=sim.barQ.filter(x=>x!==q);}},{wait:.4,act:'grab'},{fn:()=>{a.grab=null;a.carry={type:'drink',c:g.dc};}},{go:S2},{fn:()=>{a.moving=a.carry;a.carry=null;}},{wait:.45,act:'set',tt:t},{fn:()=>{a.moving=null;g.d=2;served(g);done();}}];
@@ -432,7 +432,7 @@ cv.addEventListener('pointerdown',e=>{if(state!=='build')return;const x=e.client
   bubs[h.k].ready=0;const v=Math.round(coinVal()*(ROOMS[S.view]?ROOMS[S.view].mult:1)*(isRush()?2:1));for(let k=0;k<Math.min(6,2+v/4|0);k++)fly.push({x:h.x+(Math.random()-.5)*20,y:h.y,t:-k*.06,v:k?0:v});pops.push({x:h.x,y:h.y-20,t:'+$'+v,l:1});snd(1500,.08,'square',.08);buzz(8);S.taps=(S.taps||0)+1;save();return;}});
 let hits=[];window._hits=()=>hits.map(h=>({x:h.x|0,y:h.y|0,r:h.r|0,k:h.k,buy:h.buy,room:h.room}));const _tb=tableDraw;
 // collect hit targets each frame
-const _bs=window.buildScene;window.buildScene=function(m){hits=[];_bs(m);};
+const _bs=window.buildScene;let _errN=0;window.buildScene=function(m){hits=[];try{_bs(m);}catch(e){if(_errN++<3)console.error('scene',e);try{cx.restore();cx.setTransform(DPR,0,0,DPR,0,0);}catch(_){}}};
 // wrap tableDraw to record hits
 tableDraw=function(t,act,next){_tb(t,act,next);if(t.hit)hits.push({...t.hit,k:key(t)});};
 // ---------- panel ----------
