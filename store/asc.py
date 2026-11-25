@@ -121,3 +121,12 @@ for i in g(f'/v1/apps/{APP}/appInfos')['data']:
 for bd in g(f'/v1/builds?filter[app]={APP}&sort=-uploadedDate&limit=3')['data']:print('BUILDS',bd['id'],bd['attributes']['version'],bd['attributes']['processingState'],bd['attributes'].get('usesNonExemptEncryption'))
 pr=api('GET',f'/v1/apps/{APP}/appPriceSchedule');print('PRICE',pr.status_code,pr.text[:300])
 print('GC',api('GET',f'/v1/apps/{APP}/gameCenterDetail').text[:300])
+def submit():
+    v=[x for x in g(f'/v1/apps/{APP}/appStoreVersions?limit=10')['data'] if x['attributes']['appStoreState'] in('PREPARE_FOR_SUBMISSION','DEVELOPER_REJECTED','REJECTED','METADATA_REJECTED')][0];vid=v['id']
+    for d in g(f'/v1/apps/{APP}/inAppPurchasesV2?limit=200')['data']:
+        if d['attributes'].get('state')=='READY_TO_SUBMIT':print('iap submit',d['attributes']['productId'],api('POST','/v1/inAppPurchaseSubmissions',json={'data':{'type':'inAppPurchaseSubmissions','relationships':{'inAppPurchaseV2':{'data':{'type':'inAppPurchases','id':d['id']}}}}}).status_code)
+    open_=[s for s in g(f'/v1/reviewSubmissions?filter[app]={APP}&filter[state]=READY_FOR_REVIEW')['data']]
+    sid=open_[0]['id'] if open_ else api('POST','/v1/reviewSubmissions',json={'data':{'type':'reviewSubmissions','attributes':{'platform':'IOS'},'relationships':{'app':{'data':{'type':'apps','id':APP}}}}}).json()['data']['id']
+    print('item',api('POST','/v1/reviewSubmissionItems',json={'data':{'type':'reviewSubmissionItems','relationships':{'reviewSubmission':{'data':{'type':'reviewSubmissions','id':sid}},'appStoreVersion':{'data':{'type':'appStoreVersions','id':vid}}}}}).status_code)
+    r=api('PATCH',f'/v1/reviewSubmissions/{sid}',json={'data':{'type':'reviewSubmissions','id':sid,'attributes':{'submitted':True}}});print('SUBMITTED' if r.status_code<300 else 'SUBMIT FAILED',r.status_code)
+if MODE=='submit':submit()
