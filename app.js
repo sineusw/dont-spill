@@ -28,7 +28,10 @@ setTimeout(()=>{if(S.set.music)musicOn();if(AC&&AC.state!=='running'&&!NAT){musi
 function audioWake(){try{if(!AC){if(S.set.music)musicOn();return;}if(AC.state==='closed'){AC=new(window.AudioContext||window.webkitAudioContext)();mG=null;}
  if(AC.state!=='running'){musicOff();AC.resume().then(()=>{if(S.set.music)musicOn();}).catch(()=>{});}else if(S.set.music&&!mG)musicOn();}catch(e){}}
 window.audioWake=audioWake;
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(audioWake,150);else musicOff();});
+function audioReset(){try{musicOff();try{AC&&AC.close&&AC.close();}catch(e){}AC=new(window.AudioContext||window.webkitAudioContext)();mG=null;AC.resume&&AC.resume().catch(()=>{});if(S.set.music)musicOn();}catch(e){}}
+window.audioReset=audioReset;let _hidAt=0;
+document.addEventListener('visibilitychange',()=>{if(document.hidden){_hidAt=Date.now();musicOff();}else setTimeout(()=>{if(Date.now()-_hidAt>800)audioReset();else audioWake();},250);});
+document.addEventListener('pointerdown',()=>{if(window._needAR){window._needAR=0;audioReset();}},true);
 window.addEventListener('focus',()=>setTimeout(audioWake,150));window.addEventListener('pageshow',()=>setTimeout(audioWake,150));
 document.addEventListener('pointerdown',()=>{if(AC&&AC.state!=='running')audioWake();},true);
 setInterval(()=>{if(!document.hidden&&AC&&AC.state!=='running')audioWake();},3000);

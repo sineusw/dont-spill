@@ -34,7 +34,7 @@ function rundown(){const pr=prog();if(pr<3){cx.strokeStyle='rgba(60,30,30,.55)';
  if(pr<6){for(const [u,v,r] of[[-.6,.55,26],[.5,.2,20],[.2,.9,30],[-1,.15,18]]){const p=P(u,v);cx.fillStyle='rgba(110,80,50,.28)';cx.beginPath();cx.ellipse(p.x,p.y,r*p.s,r*.4*p.s,0,0,TAU);cx.fill();}}
  if(pr<2&&Math.sin(BT*13)>.7){cx.fillStyle='rgba(0,0,0,.18)';cx.fillRect(0,0,W,bot);}}
 const tables=()=>{const a=[];const cols=[-.85,-.3,.3,.85];for(let r=0;r<2;r++)for(let c=0;c<4;c++)a.push({u:cols[c],v:r?.8:.3,i:r*4+c});return a;};
-function coinVal(){return Math.max(2,Math.round((S.tab.tables*2+S.tab.waiter*6)*boost()*.35/Math.max(1,S.tab.tables)+2));}
+function coinVal(){return Math.max(5,Math.round(rateMin()*1.2*boost()/Math.max(1,nTables()/2)+3));}
 // ---------- characters ----------
 function person(x,y,s,k,mood,bob=0,seated=0){const sk=SKIN[k%5],hc=HAIR[k%6],sh=SHIRT[k%7];y+=bob;
  if(!seated){cx.fillStyle='#2a2a38';cx.beginPath();cx.roundRect(x-7*s,y-2*s,6*s,16*s,3*s);cx.roundRect(x+1*s,y-2*s,6*s,16*s,3*s);cx.fill();}
@@ -148,7 +148,7 @@ function room(){const night=new Date().getHours()<6||new Date().getHours()>=20;
  cx.fillStyle='#a8b4bf';cx.fillRect(kx-8,ky+kh,kw+16,8);ink(2);el(kx+kw-6,ky+kh-4,6,5,'#f2c230',2);drawPass(kx,kw,ky+kh);
  }else{for(const fx0 of[.82]){cx.fillStyle='#e0a91a';cx.beginPath();cx.roundRect(W*fx0-30,wallH*.28,60,46,4);cx.fill();ink(3);cx.fillStyle='#2a1440';cx.fillRect(W*fx0-24,wallH*.28+6,48,34);el(W*fx0,wallH*.28+23,9,12,'#ffd23f',0);}}
  }
- kitchenDoors();
+ kitchenDoors();cityDeco();
  // floor
  const fy=wallH,fh=bot-wallH;g=cx.createLinearGradient(0,fy,0,bot);g.addColorStop(0,th.floor[0]);g.addColorStop(1,th.floor[1]);cx.fillStyle=g;cx.fillRect(0,fy,W,fh);
  const rows=9,cols=14;for(let r=0;r<rows;r++){const v0=r/rows,v1=(r+1)/rows,y0=fy+fh*Math.pow(v0,1.15),y1=fy+fh*Math.pow(v1,1.15);for(let c=-cols/2;c<cols/2;c++){if((r+c)&1)continue;const sp0=W*.30+W*.16*v0,sp1=W*.30+W*.16*v1,u0=c/3.4,u1=(c+1)/3.4;cx.fillStyle=th.tile;cx.beginPath();cx.moveTo(W/2+u0*sp0*1.3,y0);cx.lineTo(W/2+u1*sp0*1.3,y0);cx.lineTo(W/2+u1*sp1*1.3,y1);cx.lineTo(W/2+u0*sp1*1.3,y1);cx.fill();}}
@@ -186,13 +186,13 @@ const SEATED=new Set(['menu','ready','ordering','waiting','eating']);
 const SPOT={pod:{u:1.12,v:.52},bus:{u:-1.04,v:.52},bar:{u:-1.02,v:.03},kit:{u:1.3,v:-.03},home:{u:.05,v:.55}};
 const FOODS=['🍔','🍕','🥩','🍝','🌮','🍣','🥗','🍗'],DRK=['#ff7a3c','#7ee0ff','#ffd23f','#ff4fa3','#7cff6b','#c0213a'];
 function party(){const a=Math.random()*40|0,b=Math.random()<.7?Math.random()*40|0:null;return Math.random()<.5?[a,b]:[b,a];}
-function guest(t){const k=key(t);if(!guests[k]){const r=Math.random();guests[k]=r<.45?{st:'eating',t:rand(3,10),party:party(),d:2,f:2,fe:FOODS[t.i%8],dc:DRK[t.i%6]}:r<.6?{st:'dirty',party:[null,null],clr:0}:{st:'empty',t:rand(.5,4),party:party()};}if(guests[k].st==='dirty'&&!guests[k].tq){guests[k].tq=1;task('clear',t,guests[k]);}return guests[k];}
+function guest(t){const k=key(t);if(!guests[k]){const r=Math.random();guests[k]=r<.45?{st:'eating',t:rand(3,10),party:party(),d:2,f:2,fe:(CFOOD[S.city]||FOODS)[t.i%8],dc:DRK[t.i%6]}:r<.6?{st:'dirty',party:[null,null],clr:0}:{st:'empty',t:rand(.5,4),party:party()};}if(guests[k].st==='dirty'&&!guests[k].tq){guests[k].tq=1;task('clear',t,guests[k]);}return guests[k];}
 const rush=()=>isRush()?1.6:1;
 let sim={view:'',ag:[],tasks:[],barQ:[],passQ:[],door:0,sig:''};
 const lvl=k=>S.tab[k]||0;
 function task(type,t,g,extra){sim.tasks.push(Object.assign({type,t,g,by:null},extra||{}));}
 function side(t){return{u:t.u+(t.u>0?-.02:.02),v:t.v+.13};}
-function placeOrder(t,g){g.st='waiting';g.d=0;g.f=0;g.fe=FOODS[(Math.random()*8)|0];g.dc=DRK[(Math.random()*6)|0];
+function placeOrder(t,g){g.st='waiting';g.d=0;g.f=0;g.fe=(CFOOD[S.city]||FOODS)[(Math.random()*8)|0];g.dc=DRK[(Math.random()*6)|0];
  if(lvl('bartender')){sim.barQ.push({t,g,c:g.dc,ready:0,left:3.4/(1+.12*lvl('bartender')),total:3.4/(1+.12*lvl('bartender'))});}else task('drink',t,g,{make:1});
  g.cook=5.5;}
 function served(g){if(g.d===2&&g.f===2){g.st='eating';g.t=rand(6,9);}}
@@ -458,7 +458,7 @@ window.renderBuild=function(){const st=stars(),pr=prog(),nx=STAR[st],pv=st?STAR[
  $('ups').className='ugrid';$('ups').style.cssText='';
  if(bTab==='rooms'||bTab==='style'){const C2=(attr,ic,name,mid,price,can,max)=>`<button class="ucard ${max?'max':can?'':'no'}" ${attr}><span class="ic">${ic}</span><b>${name}</b>${mid}<span class="pr">${price}</span></button>`;
   $('ups').innerHTML=bTab==='rooms'?Object.entries(ROOMS).map(([r,R])=>{const o=S.rooms[r];if(!o.own)return C2(`data-r="${r}"`,R.ic,R.name,`<small>New room + its own mini-game<br>+$${R.per}/min per table · tips x${R.mult}</small>`,'$'+R.cost,S.coins>=R.cost,0);const mx=o.tables>=8,c=rtCost(r);return C2(`data-rt="${r}"`,R.ic,R.name,`<span class="pips">${Array.from({length:8},(_,i)=>`<i class="${i<o.tables?'on':''}"></i>`).join('')}</span><small>+1 table · +$${R.per}/min</small>`,mx?'MAX':'$'+c,S.coins>=c,mx);}).join('')+C2('data-go="main"','🏠','Main Room','<small>'+(S.view==='main'?'Viewing now':'Tap to view')+'</small>',S.view==='main'?'HERE':'GO',1,S.view==='main')
-  :Object.entries(THEMES).map(([k,T])=>{const own=S.themes.includes(k),on=S.theme===k;return C2(`data-th="${k}"`,T.ic,T.name,`<small>${on?'In use':own?'Tap to use':'New look for the main room'}</small>`,on?'USING':own?'OWNED':'$'+T.cost,own||S.coins>=T.cost,on);}).join('');
+  :Object.entries(THEMES).filter(([k,T])=>(T.city||'nash')===(S.city||'nash')).map(([k,T])=>{const own=S.themes.includes(k),on=S.theme===k;return C2(`data-th="${k}"`,T.ic,T.name,`<small>${on?'In use':own?'Tap to use':'New look for the main room'}</small>`,on?'USING':own?'OWNED':'$'+T.cost,own||S.coins>=T.cost,on);}).join('');
   ['tStaff','tDecor','tRooms','tStyle'].forEach(id=>$(id).className=(id==='t'+bTab[0].toUpperCase()+bTab.slice(1))?'':'ghost');return;}
  if($('tRooms')){$('tRooms').className='ghost';$('tStyle').className='ghost';}
  $('ups').innerHTML=bTab==='decor'?DECOR.map(d=>card(d.k,d.name,S.decor.includes(d.k),1,'',d.cost,1)).join(''):UPS.map(u=>{const l=S.tab[u.k];return card(u.k,u.name,l,u.max,PERK[u.k](l),upCost(u),0);}).join('');
@@ -512,5 +512,88 @@ $('collect').addEventListener('click',()=>{confetti(W/2,(bot||H*.4)*.6,30);},tru
   let ch=0;for(const u of UPS)if(S.tab[u.k]>=u.max&&!S.maxd[u.k]){S.maxd[u.k]=1;ch=1;mini('⭐ '+u.name.toUpperCase()+' MAXED!');}
   const sc=sections();for(const k in sc)if(sc[k]&&!S.maxd['sec_'+k]){S.maxd['sec_'+k]=1;ch=1;setTimeout(()=>big(...SEC[k]),ch?900:0);}if(ch)save();}
  setInterval(()=>{if(state==='build')check();},400);window._celeb=(k)=>big(...SEC[k||'staff']);})();
+
+// ===================== ROAD TRIP: cities =====================
+function cityDeco(){if(S.view!=='main')return;const c=curCity();cx.font=`${Math.min(30,W*.07)}px system-ui`;cx.textAlign='center';cx.textBaseline='middle';const xs=[W*.47,W*.53,W*.5];c.deco.forEach((e,i)=>{cx.save();cx.translate(W*(.44+i*.06),wallH*(i===2?.1:.13));cx.rotate(Math.sin(BT*1.2+i)*.06);cx.fillText(e,0,0);cx.restore();});cx.textBaseline='alphabetic';
+ const t='📍 '+c.city.toUpperCase()+', '+c.st;cx.font='900 10px system-ui';const w=cx.measureText(t).width+14;cx.fillStyle='rgba(26,18,32,.8)';cx.beginPath();cx.roundRect(W/2-w/2,wallH-18,w,15,7);cx.fill();cx.fillStyle='#fff';cx.fillText(t,W/2,wallH-7);}
+const CITIES=[
+ {id:'nash',city:'Nashville',st:'TN',name:"Hometown Diner",theme:'diner',ic:'🍔',x:60,y:44,deco:['🎸','🤠','🎶'],games:[],blurb:'Where it all started.'},
+ {id:'mia',city:'Miami',st:'FL',name:"Salty's Seafood Shack",theme:'seafood',ic:'🦐',x:80,y:90,deco:['🛟','🐠','🌴'],games:['fish','fillet'],blurb:'Fresh catch, ocean breeze, sunburnt tourists.'},
+ {id:'nola',city:'New Orleans',st:'LA',name:'Bayou Cajun Kitchen',theme:'cajun',ic:'🦞',x:58,y:76,deco:['🎺','⚜️','🎭'],games:['gumbo'],blurb:'Gumbo, jazz, and beignet sugar everywhere.'},
+ {id:'atx',city:'Austin',st:'TX',name:'Lone Star Smokehouse',theme:'bbq',ic:'🍖',x:42,y:78,deco:['🐂','⭐','🌵'],games:['brisket'],blurb:'Low and slow. Lines around the block.'},
+ {id:'nyc',city:'New York',st:'NY',name:"Big Apple Pizzeria",theme:'pizza',ic:'🍕',x:86,y:26,deco:['🗽','🚕','🍎'],games:['dough'],blurb:'Toss it high. Fold it in half. Walk fast.'}];
+Object.assign(THEMES,{
+ seafood:{name:'Seafood Shack',city:'mia',cost:0,ic:'🦐',wall:['#bfeaf0','#7fd0dc'],trim:['#1f6f8b','#2a8fb0'],floor:['#e9d7b4','#f6ead2'],tile:'rgba(31,111,139,.14)',cloth:'rgba(31,143,176,.75)',sign:"SALTY'S SEAFOOD",signC:'#1f6f8b',lamp:'#ffd23f'},
+ cajun:{name:'Cajun Kitchen',city:'nola',cost:0,ic:'🦞',wall:['#3f5a3a','#2c4229'],trim:['#6b2a8a','#8a3cb0'],floor:['#5a3a24','#7a5236'],tile:'rgba(0,0,0,.2)',cloth:'rgba(255,210,63,.7)',sign:'BAYOU CAJUN KITCHEN',signC:'#6b2a8a',lamp:'#ffd23f'},
+ bbq:{name:'Smokehouse',city:'atx',cost:0,ic:'🍖',wall:['#a0603a','#7a4428'],trim:['#3a2418','#5a3a24'],floor:['#6b4a32','#8a6444'],tile:'rgba(0,0,0,.18)',cloth:'rgba(192,33,58,.7)',sign:'LONE STAR SMOKEHOUSE',signC:'#3a2418',lamp:'#ff7a3c'},
+ pizza:{name:'Pizzeria',city:'nyc',cost:0,ic:'🍕',wall:['#b5533c','#8f3d2b'],trim:['#1f5a32','#2c7a46'],floor:['#f2f2f2','#d9d9d9'],tile:'rgba(0,0,0,.14)',cloth:'rgba(214,48,58,.8)',sign:'BIG APPLE PIZZERIA',signC:'#1f5a32',lamp:'#ffd23f'}});
+const CFOOD={nash:FOODS,mia:['🦐','🦞','🐟','🦀','🍤','🦪','🐚','🍋'],nola:['🦞','🍲','🍛','🌶️','🍤','🥖','🍩','🦐'],atx:['🍖','🥩','🌭','🍗','🌽','🥔','🍞','🥓'],nyc:['🍕','🥯','🌭','🥨','🍝','🧀','🍎','🥗']};
+const curCity=()=>CITIES.find(c=>c.id===(S.city||'nash'))||CITIES[0];
+window.dsCity=()=>curCity();window.dsCityFood=()=>CFOOD[S.city||'nash'];
+S.city=S.city||'nash';S.trip=S.trip||{nash:{}};S.done=S.done||{};
+const CK=['tab','decor','rooms','themes','theme','coins','bank','last','mgrUntil','maxd','view'];
+function travel(id){if(id===S.city)return;const c=CITIES.find(x=>x.id===id);if(!c)return;accrue();const snap={};CK.forEach(k=>snap[k]=JSON.parse(JSON.stringify(S[k]===undefined?null:S[k])));S.trip[S.city]=snap;
+ const t=S.trip[id];if(t&&t.tab){CK.forEach(k=>{if(t[k]!==null&&t[k]!==undefined)S[k]=t[k];});S.last=Date.now();}
+ else{S.tab={tables:1,waiter:0,host:0,bartender:0,busboy:0,runner:0};S.decor=[];S.rooms={patio:{own:0,tables:0},vip:{own:0,tables:0}};S.themes=[c.theme];S.theme=c.theme;S.coins=0;S.bank=0;S.last=Date.now();S.mgrUntil=0;S.maxd=null;S.view='main';S.trip[id]={};}
+ S.city=id;save();for(const k in guests)delete guests[k];sim.sig='';sim.view='';BLKsig='';if(window.renderBuild&&state==='build')renderBuild();if(window.renderMenu)renderMenu();}
+const unlocked=i=>i===0||S.done[CITIES[i-1].id];
+// ---- offline earnings: 10% while away unless a manager is on duty
+function accrue(){const now=Date.now(),last=S.last||now;if(S.bank==null){S.bank=0;}const mins=Math.max(0,(now-last)/60000),r=rateMin();if(mins<=0){S.last=now;return;}
+ let earned;if(document.hidden===false&&mins<.2)earned=r*mins;else{const mg=Math.max(0,Math.min(mins,((S.mgrUntil||0)-last)/60000));earned=r*(mg+.1*(mins-mg));}
+ S.bank=Math.min(r*480,(S.bank||0)+earned);S.last=now;}
+window.dsAccrue=accrue;setInterval(()=>{if(!document.hidden)accrue();},1000);
+document.addEventListener('visibilitychange',()=>{accrue();save();});
+const mgrOn=()=>(S.mgrUntil||0)>Date.now(),mgrLeft=()=>Math.max(0,(S.mgrUntil||0)-Date.now());
+function addMgr(ms){S.mgrUntil=Math.min(Date.now()+8*3600e3,Math.max(Date.now(),S.mgrUntil||0)+ms);save();}
+const fmtT=ms=>{const m=Math.round(ms/60000);return m>=60?Math.floor(m/60)+'h '+(m%60)+'m':m+'m';};
+function openMgr(){const cost=Math.max(150,Math.round(rateMin()*35));const on=mgrOn();
+ show2(`<div class="lbl">AWAY EARNINGS</div><div style="font-size:64px;line-height:1">🧑‍💼</div><h1 style="font-size:30px;margin:0">NIGHT MANAGER</h1>
+ <div class="card" style="font-size:15px;line-height:1.45">${on?`<b style="color:#7cff6b">ON DUTY · ${fmtT(mgrLeft())} left</b><br>You earn <b>100%</b> while you're away.`:`While you're away you only earn <b style="color:#ff8a7a">10%</b>.<br>Hire a manager to earn <b style="color:#7cff6b">100%</b>.`}<br><small style="opacity:.8">Max 8 hours stacked</small></div>
+ <button id="mgAd" style="width:100%;max-width:320px">▶ WATCH AD · +1 HOUR</button>
+ <button id="mgPay" class="ghost" style="width:100%;max-width:320px" ${S.coins<cost?'disabled':''}>💵 PAY $${cost} · +2 HOURS</button>
+ <button id="mgX" class="ghost" style="width:100%;max-width:320px">CLOSE</button>`);
+ $('mgX').onclick=hide2;$('mgPay').onclick=()=>{if(S.coins<cost)return;S.coins-=cost;addMgr(2*3600e3);snd(880,.12,'square',.1);buzz([20,30,40]);openMgr();if(window.renderBuild)renderBuild();};
+ $('mgAd').onclick=async()=>{const b=$('mgAd');b.disabled=true;let ok=false;if(window.dsRewardAd){b.textContent='Loading ad…';ok=await dsRewardAd();}else{b.textContent='Ad playing… 3';for(let i=2;i>=0;i--){await new Promise(r=>setTimeout(r,1000));b.textContent='Ad playing… '+i;}ok=true;}
+  if(ok){addMgr(3600e3);snd(1180,.15,'triangle',.12);buzz([20,30,60]);openMgr();}else b.textContent='No ad right now · try again later';};}
+function show2(h){let o=$('ov2');if(!o){o=document.createElement('div');o.id='ov2';o.className='ov';o.style.zIndex=30;document.body.appendChild(o);}o.innerHTML=h;o.classList.remove('hidden');}
+function hide2(){const o=$('ov2');if(o)o.classList.add('hidden');}
+window.dsOpenMgr=openMgr;
+// ---- road trip map
+function openMap(){accrue();const pts=CITIES.map(c=>c.x+','+c.y).join(' ');const cur=curCity();
+ const segs=CITIES.slice(1).map((c,i)=>{const a=CITIES[i];const doneSeg=S.done[a.id];return `<line x1="${a.x}" y1="${a.y}" x2="${c.x}" y2="${c.y}" stroke="${doneSeg?'#ffd23f':'#fff'}" stroke-width="${doneSeg?2.2:1.6}" stroke-dasharray="${doneSeg?'0':'3 2.5'}" stroke-linecap="round"/>`;}).join('');
+ const pins=CITIES.map((c,i)=>{const un=unlocked(i),isCur=c.id===S.city;return `<g class="pin" data-c="${c.id}" style="cursor:pointer"><circle cx="${c.x}" cy="${c.y}" r="${isCur?6:4.6}" fill="${S.done[c.id]?'#2bb673':un?'#ff5a3c':'#6b5a78'}" stroke="#1a1220" stroke-width="1.2"/><text x="${c.x}" y="${c.y+1.6}" font-size="${isCur?5.5:4.5}" text-anchor="middle">${un?c.ic:'🔒'}</text><text x="${c.x}" y="${c.y-(isCur?8.5:7)}" font-size="3.6" font-weight="900" text-anchor="middle" fill="#fff" stroke="#1a1220" stroke-width=".9" paint-order="stroke">${c.city.toUpperCase()}, ${c.st}</text></g>`;}).join('');
+ const car=`<text x="${cur.x+7}" y="${cur.y+5}" font-size="7" class="car">🚗</text>`;
+ const usa="M8,30 L18,18 L34,16 L52,18 L66,20 L74,14 L84,12 L92,16 L90,26 L86,34 L80,40 L76,50 L74,60 L78,70 L84,82 L82,96 L76,94 L72,82 L64,76 L56,80 L48,86 L40,84 L34,74 L24,72 L14,66 L8,54 Z";
+ const list=CITIES.map((c,i)=>{const un=unlocked(i),isCur=c.id===S.city,tr=S.trip[c.id],cash=isCur?S.coins:(tr&&tr.coins)||0;return `<div class="tripRow ${isCur?'cur':''}"><div style="font-size:30px">${un?c.ic:'🔒'}</div><div style="flex:1;text-align:left"><b>${i+1}. ${c.city}, ${c.st}</b> ${S.done[c.id]?'<span class="tdone">★ COMPLETE</span>':''}<br><small>${c.name}${un&&(tr&&tr.tab||isCur)?` · 💵 $${cash}`:''}</small><br><small style="opacity:.75">${un?(c.games.length?'New games: '+c.games.map(g=>(G2N[g]||g)).join(', '):c.blurb):'Finish '+CITIES[i-1].city+' (★5) to unlock'}</small></div>${isCur?'<span class="here">YOU\'RE HERE</span>':un?`<button class="go" data-go="${c.id}">DRIVE</button>`:''}</div>`;}).join('');
+ show2(`<div class="lbl">ROAD TRIP</div><h1 style="font-size:28px;margin:0">🗺️ THE DON'T SPILL TOUR</h1>
+ <svg viewBox="0 0 100 100" style="width:100%;max-width:360px;border-radius:20px;border:4px solid #1a1220;box-shadow:0 6px 0 #1a1220;background:linear-gradient(#5ac8f0,#2f8fd0)"><path d="${usa}" fill="#7cc46a" stroke="#3f7a38" stroke-width="1.2"/><path d="${usa}" fill="url(#mp)" opacity=".25"/><defs><pattern id="mp" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#2a5a24"/></pattern></defs>${segs}${pins}${car}</svg>
+ <div class="tripList">${list}</div><button id="mapX" class="ghost" style="width:100%;max-width:340px">CLOSE</button>`);
+ $('mapX').onclick=hide2;document.querySelectorAll('#ov2 [data-go]').forEach(b=>b.onclick=()=>{const c=CITIES.find(x=>x.id===b.dataset.go),tr=S.trip[c.id];const fresh=!(tr&&tr.tab);
+  show2(`<div style="font-size:70px">🚗💨</div><h1 style="font-size:28px;margin:0">DRIVE TO ${c.city.toUpperCase()}?</h1><div class="card" style="font-size:15px;line-height:1.5">Your <b>$${S.coins}</b> stays in ${curCity().city}.<br>${fresh?`You open <b>${c.name}</b> with <b>$0</b>.`:`Your ${c.city} restaurant is waiting with <b>$${tr.coins||0}</b>.`}</div><button id="tGo" style="width:100%;max-width:320px">LET'S ROLL 🚗</button><button id="tNo" class="ghost" style="width:100%;max-width:320px">NOT YET</button>`);
+  $('tNo').onclick=openMap;$('tGo').onclick=()=>{travel(c.id);hide2();roadAnim(c);};});
+ document.querySelectorAll('#ov2 .pin').forEach(p=>p.onclick=()=>{const b=document.querySelector(`#ov2 [data-go="${p.dataset.c}"]`);b&&b.click();});}
+function roadAnim(c){const d=document.createElement('div');d.id='roadAnim';d.innerHTML=`<div class="rsky"></div><div class="rroad"></div><div class="rcar">🚗</div><div class="rtxt">WELCOME TO<br><b>${c.city.toUpperCase()}, ${c.st}</b><br><small>${c.name}</small></div>`;document.body.appendChild(d);
+ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>snd(f,.2,'triangle',.14),600+i*120));buzz([40,60,40,60,120]);setTimeout(()=>{confetti(W/2,H*.3,70);},1400);setTimeout(()=>d.remove(),3600);d.onclick=()=>d.remove();}
+window.dsOpenMap=openMap;
+const G2N={fish:'Reel It In',fillet:'Fillet It',gumbo:'Stir the Gumbo',brisket:'Slice the Brisket',dough:'Dough Toss'};
+// city completion celebration
+setInterval(()=>{if(stars()>=5&&!S.done[S.city]){S.done[S.city]=1;S.bestStars=5;save();const i=CITIES.findIndex(c=>c.id===S.city),nx=CITIES[i+1];
+ show2(`<div style="font-size:80px">🏆</div><h1 style="font-size:30px;margin:0;color:#ffd23f">${curCity().city.toUpperCase()} COMPLETE!</h1><div class="card" style="font-size:15px">${nx?`Next stop on the road trip: <b>${nx.city}, ${nx.st}</b> ${nx.ic}<br>New restaurant, new games, start from $0.`:'You conquered the whole tour! More cities coming soon.'}</div><button id="cmMap" style="width:100%;max-width:320px">🗺️ OPEN ROAD TRIP MAP</button><button id="cmX" class="ghost" style="width:100%;max-width:320px">STAY HERE</button>`);
+ $('cmMap').onclick=openMap;$('cmX').onclick=hide2;confetti(W/2,H*.3,90);buzz([80,50,80,50,250]);}
+ S.bestStars=Math.max(S.bestStars||0,stars());},1000);
+// styles
+{const c=document.createElement('style');c.textContent=`#ov2{background:rgba(20,10,25,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;overflow:auto;color:#fff;text-align:center}#ov2.hidden{display:none}#ov2 .card{background:rgba(255,255,255,.1);border-radius:16px;padding:12px;max-width:340px}.tripList{width:100%;max-width:360px;display:flex;flex-direction:column;gap:8px;max-height:34vh;overflow:auto}
+.tripRow{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border-radius:16px;padding:9px 11px;font-size:14px}.tripRow.cur{background:linear-gradient(90deg,rgba(255,210,63,.3),rgba(255,122,60,.18));box-shadow:0 0 0 2px #ffd23f}
+.tripRow .go{margin:0;padding:9px 14px;font-size:14px;width:auto}.tripRow .here{font:900 11px system-ui;color:#ffd23f}.tdone{font:900 10px system-ui;color:#7cff6b}
+#ov2 .car{animation:carB 1s ease-in-out infinite}@keyframes carB{50%{transform:translateY(-1px)}}
+#roadAnim{position:fixed;inset:0;z-index:45;overflow:hidden;display:flex;align-items:center;justify-content:center;animation:cFade .3s}
+#roadAnim .rsky{position:absolute;inset:0;background:linear-gradient(#ffb85c,#ff7a3c 55%,#4a2a5a)}#roadAnim .rroad{position:absolute;left:0;right:0;bottom:0;height:34%;background:#3a3a44;border-top:6px solid #2bb673}
+#roadAnim .rroad::after{content:'';position:absolute;top:45%;left:-50%;width:200%;height:8px;background:repeating-linear-gradient(90deg,#ffd23f 0 40px,transparent 40px 80px);animation:rd .4s linear infinite}@keyframes rd{to{transform:translateX(-80px)}}
+#roadAnim .rcar{position:absolute;bottom:22%;font-size:90px;transform:scaleX(-1);animation:rc 3.2s ease-in-out forwards}@keyframes rc{0%{left:-30%}40%,70%{left:35%}100%{left:120%}}
+#roadAnim .rtxt{position:relative;z-index:2;text-align:center;color:#fff;font:800 20px system-ui;text-shadow:0 3px 0 #1a1220;margin-bottom:30vh;animation:cPop .6s .5s both cubic-bezier(.2,1.6,.4,1)}#roadAnim .rtxt b{font:900 clamp(30px,9vw,46px) system-ui;color:#ffd23f}`;document.head.appendChild(c);}
+
+const _seC=simEntities;simEntities=function(){const E=_seC();if(mgrOn()&&S.view==='main'){const p=P(.2,.14),s=p.s*.9;E.push({y:p.y+14*s,f:()=>{staff(p.x,p.y,s,4,'srv',BT,1,{shirt:'#fff',vest:'#2a2a48',tie:'#ffd23f',shoe:'#000',apron:0});cx.fillStyle='#f4f4f4';cx.beginPath();cx.roundRect(p.x+8*s,p.y-28*s,11*s,14*s,2*s);cx.fill();ink(1.5);cx.fillStyle='#8a5a2b';cx.fillRect(p.x+11*s,p.y-30*s,5*s,3*s);TAGS.push([p.x,p.y-62*s,'🧑‍💼 MANAGER',1]);}});}return E;};
+(()=>{const sh=$('build');if(sh&&!$('tripRow')){const r=document.createElement('div');r.id='tripRow';r.className='row';r.style.cssText='gap:8px;width:100%;margin:2px 0 8px;flex-wrap:nowrap';r.innerHTML='<button id="bMap" class="ghost" style="flex:1;margin:0;padding:9px 6px;font-size:14px">🗺️ ROAD TRIP</button><button id="bMgr" class="ghost" style="flex:1;margin:0;padding:9px 6px;font-size:14px">🧑‍💼 MANAGER</button>';const tog=$('shTog');tog?tog.after(r):sh.prepend(r);$('bMap').onclick=openMap;$('bMgr').onclick=openMgr;setInterval(()=>{const b=$('bMgr');if(b)b.textContent=mgrOn()?'🧑‍💼 ON · '+fmtT(mgrLeft()):'🧑‍💼 AWAY: 10%';},1000);}
+ const go=$('go');if(go&&!$('mapBtn')){const b=document.createElement('button');b.id='mapBtn';b.style.cssText='width:100%;max-width:340px;margin:0;background:#2f8fd0;box-shadow:0 6px 0 #1a5a8a';go.parentElement.after(b);b.onclick=openMap;const u=()=>{const c=curCity();b.textContent='🗺️ ROAD TRIP · '+c.city.toUpperCase()+', '+c.st;};u();setInterval(u,2000);}})();
 
 })();
