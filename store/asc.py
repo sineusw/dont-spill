@@ -43,22 +43,22 @@ def metadata():
     info=[i for i in g(f'/v1/apps/{APP}/appInfos')['data'] if i['attributes']['state']!='READY_FOR_DISTRIBUTION'][0];iid=info['id']
     il=g(f'/v1/appInfos/{iid}/appInfoLocalizations')['data'][0]
     r=api('PATCH',f"/v1/appInfoLocalizations/{il['id']}",json={'data':{'type':'appInfoLocalizations','id':il['id'],'attributes':{'subtitle':'Serve Fast. Build Your Diner.','privacyPolicyUrl':SITE+'/privacy.html'}}});print('info loc',r.status_code)
-    r=api('PATCH',f'/v1/appInfos/{iid}',json={'data':{'type':'appInfos','id':iid,'relationships':{'primaryCategory':{'data':{'type':'appCategories','id':'GAMES'}},'primarySubcategoryOne':{'data':{'type':'appCategories','id':'GAMES_CASUAL'}},'primarySubcategoryTwo':{'data':{'type':'appCategories','id':'GAMES_SIMULATION'}},'secondaryCategory':{'data':{'type':'appCategories','id':'GAMES_ARCADE'}}}}});print('category',r.status_code)
-    ar=g(f'/v1/appInfos/{iid}/ageRatingDeclaration')['data'];attrs=ar['attributes'];new={}
-    for k,val in attrs.items():
-        if k in('kidsAgeBand','ageRatingOverride','ageRatingOverrideV2','koreaAgeRatingOverride','koreaAgeRatingOverrideV2','developerAgeRatingInfoUrl'):continue
-        if k=='alcoholTobaccoOrDrugUseOrReferences':new[k]='INFREQUENT_OR_MILD'
-        elif k=='advertising':new[k]=True
-        elif isinstance(val,bool) or k in('gambling','lootBox','messagingAndChat','parentalControls','ageAssurance','unrestrictedWebAccess','userGeneratedContent','healthOrWellnessTopics','seventeenPlus'):new[k]=False
-        else:new[k]='NONE'
-    r=api('PATCH',f"/v1/ageRatingDeclarations/{ar['id']}",json={'data':{'type':'ageRatingDeclarations','id':ar['id'],'attributes':new}});print('age',r.status_code)
-    if r.status_code>=400:
-        # retry field-by-field to learn types
-        for k,val in new.items():
-            rr=api('PATCH',f"/v1/ageRatingDeclarations/{ar['id']}",json={'data':{'type':'ageRatingDeclarations','id':ar['id'],'attributes':{k:val}}})
-            if rr.status_code>=400:
-                alt=('NONE' if isinstance(val,bool) else False);api('PATCH',f"/v1/ageRatingDeclarations/{ar['id']}",json={'data':{'type':'ageRatingDeclarations','id':ar['id'],'attributes':{k:alt}}})
-    print('AGE NOW',g(f"/v1/ageRatingDeclarations/{ar['id']}")['data']['attributes'])
+    r=api('PATCH',f'/v1/appInfos/{iid}',json={'data':{'type':'appInfos','id':iid,'relationships':{'primaryCategory':{'data':{'type':'appCategories','id':'GAMES'}},'primarySubcategoryOne':{'data':{'type':'appCategories','id':'GAMES_CASUAL'}},'primarySubcategoryTwo':{'data':{'type':'appCategories','id':'GAMES_SIMULATION'}}}}});print('category',r.status_code)
+    ar=g(f'/v1/appInfos/{iid}/ageRatingDeclaration')['data'];new={}
+    for k in ar['attributes']:
+        if k in('kidsAgeBand','ageRatingOverride','ageRatingOverrideV2','koreaAgeRatingOverride','koreaAgeRatingOverrideV2','developerAgeRatingInfoUrl','seventeenPlus'):continue
+        new[k]=True if k=='advertising' else 'INFREQUENT_OR_MILD' if k=='alcoholTobaccoOrDrugUseOrReferences' else 'NONE'
+    for attempt in range(6):
+        r=requests.patch(B+f"/v1/ageRatingDeclarations/{ar['id']}",headers={'Authorization':'Bearer '+tok(),'Content-Type':'application/json'},json={'data':{'type':'ageRatingDeclarations','id':ar['id'],'attributes':new}})
+        if r.status_code<300:print('age ok',new);break
+        for e in r.json().get('errors',[]):
+            d=e.get('detail','');k=e.get('source',{}).get('pointer','').split('/')[-1]
+            if 'Expected a BOOLEAN' in d:new[k]=(k=='advertising')
+            elif 'Expected a STRING' in d or 'Expected' in d and 'STRING' in d:new[k]='NONE'
+            elif 'must provide a value' in d:new[k]='NONE'
+            elif k in new and ('not' in d.lower() or 'invalid' in d.lower()):new.pop(k,None)
+            print('age fix',k,d[:120])
+    else:print('AGE FAILED',r.text[:1500])
     # price: free
     ps=g(f'/v1/appPriceSchedules/{APP}/manualPrices').get('data',[])
     if not ps:
