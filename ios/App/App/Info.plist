@@ -10,8 +10,6 @@
 	<array>
 		<dict><key>SKAdNetworkIdentifier</key><string>cstr6suwn9.skadnetwork</string></dict>
 	</array>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>This lets ads be more relevant to you. The game works the same either way.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>UIStatusBarHidden</key>
