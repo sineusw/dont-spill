@@ -32,11 +32,10 @@ window.dsNotifAsk=async()=>{try{let p=await LN.checkPermissions();if(p.display!=
 document.addEventListener('visibilitychange',()=>{if(document.hidden)schedule();});schedule();
 
 // ---- In-app purchases (StoreKit 2 via PettyStore plugin)
-const ST=PL('PettyStore'),IAP={mgr:'com.pettygames.dontspill.manager8h',tips:'com.pettygames.dontspill.tips4h',pass:'com.pettygames.dontspill.staffpass'};
+const ST=PL('PettyStore'),IAP={mgr:'com.pettygames.dontspill.manager8h',tips:'com.pettygames.dontspill.tips4h'};
 window.dsIAP={ids:IAP,prices:{},ready:false,
  async load(){try{const r=await ST.products({ids:Object.values(IAP)});for(const p of r.products)this.prices[p.id]=p.price;this.ready=r.products.length>0;}catch(e){}},
  price(k,d){return this.prices[IAP[k]]||d;},
- async buy(k){try{const r=await ST.purchase({id:IAP[k]});if(r&&r.ok){window.dsGrant&&dsGrant(k);return 'ok';}return r&&r.cancelled?'cancel':r&&r.pending?'pending':'fail';}catch(e){return 'fail';}},
- async restore(){try{const r=await ST.restore();if(r.ids.includes(IAP.pass)){window.dsGrant&&dsGrant('pass');return true;}}catch(e){}return false;}};
-dsIAP.load();setTimeout(()=>ST.owned().then(r=>{if(r.ids.includes(IAP.pass))window.dsGrant&&dsGrant('pass');}).catch(()=>{}),2500);
+ async buy(k){try{const r=await ST.purchase({id:IAP[k]});if(r&&r.ok){window.dsGrant&&dsGrant(k);return 'ok';}return r&&r.cancelled?'cancel':r&&r.pending?'pending':'fail';}catch(e){return 'fail';}},};
+dsIAP.load();
 })();

@@ -9,11 +9,12 @@ def api(m,p,**kw):
     return r
 PRODUCTS=[
  dict(pid='com.pettygames.dontspill.manager8h',name='Night Manager 8 Hours',type='CONSUMABLE',price='0.99',dn='Night Manager · 8 Hours',desc='Earn 100% while away for 8 hours.'),
- dict(pid='com.pettygames.dontspill.tips4h',name='Tip Runner 4 Hours',type='CONSUMABLE',price='0.99',dn='Tip Runner · 4 Hours',desc='Auto-collects table coins for 4 hours.'),
- dict(pid='com.pettygames.dontspill.staffpass',name='Staff Pass',type='NON_CONSUMABLE',price='4.99',dn='Staff Pass',desc='Night Manager + Tip Runner forever.')]
+ dict(pid='com.pettygames.dontspill.tips4h',name='Tip Runner 4 Hours',type='CONSUMABLE',price='0.99',dn='Tip Runner · 4 Hours',desc='Auto-collects table coins for 4 hours.')]
 exist={}
 r=api('GET',f'/v1/apps/{APP}/inAppPurchasesV2?limit=200')
 for d in r.json().get('data',[]):exist[d['attributes']['productId']]=d
+if 'com.pettygames.dontspill.staffpass' in exist:
+    r=api('DELETE','/v2/inAppPurchases/'+exist['com.pettygames.dontspill.staffpass']['id']);print('deleted staffpass',r.status_code)
 terr=[t['id'] for t in api('GET','/v1/territories?limit=200').json()['data']]
 shot='store/iap-review.png';shotb=open(shot,'rb').read()
 for P in PRODUCTS:

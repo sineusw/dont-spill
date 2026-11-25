@@ -319,6 +319,7 @@ window.dsPreview=(cv2,o,gl,w,h)=>{const so=S.outfit,sg=S.glass;S.outfit=o;try{dr
 const ORDER=['run','stack','pour','rush','catch','tip','wipe','order','tray','flip','swat','sort','ketchup','bell','count','sushi','pizza','memory','shake','swipe'];
 // ---------- flow ----------
 let cur=null,gs=null,dur=0,left=0,bag=[];
+window._sh=()=>({phase,k:gs&&gs.k,left,round:run&&run.round,lives:run&&run.lives,mode:run&&run.mode});
 function nextGame(){if(!bag.length){bag=pool();for(let i=bag.length-1;i>0;i--){const j=R()*(i+1)|0;[bag[i],bag[j]]=[bag[j],bag[i]];}if(bag[0]===run.last)bag.push(bag.shift());}
  const dq=new URLSearchParams(location.search).get('g'),k=dq&&G[dq]?dq:bag.shift();run.last=k;cur=G[k];S.seen=S.seen||{};gs={k,tut:!S.seen[k]&&!['ch','duo','vs'].includes(run.mode)};cur.init(gs);dur=cl(cur.dur/Math.sqrt(rate())*(gs.tut?1.35:1),5,15);if(gs.minT)dur=Math.max(dur,gs.minT);left=dur;}
 function intro(){if(run.mode==='duo'){run.round++;R=Math.random;nextGame();run.dseed=Math.random()*1e9|0;return duoTurn(0);}run.round++;nextGame();phase='intro';phT=0;run.roast=run.round===1?(run.mode==='vs'?run.ai.n+' (AI) wants your job. Loser washes dishes.':run.mode==='ch'?'Challenge run. Same orders as your friend. No perks.':run.mode==='daily'?"Daily Shift. Same orders for everyone. Don't embarrass me.":(run.rush?'RUSH SHIFT! We\'re short-staffed. Triple pay.':'Shift Mode. Every order gets faster.')+perkTxt()):pk(ROAST.intro);}

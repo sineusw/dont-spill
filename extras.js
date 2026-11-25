@@ -12,7 +12,7 @@ const css=document.createElement('style');css.textContent=`
 .scard2.sel{outline:3px solid #ffd23f;outline-offset:2px}.scard2 canvas{display:block}.scard2 b{font:900 11.5px system-ui;line-height:1.1;text-align:center}.scard2 i{font:800 10.5px system-ui;font-style:normal;margin-top:2px;padding:1px 7px;border-radius:999px;background:#2bb673;color:#fff}.scard2 i.own{background:#6a5a76}.scard2 i.on{background:#ffd23f;color:#1a1220}.scard2 i.lock{background:#b3361f}
 #shAct{width:100%;max-width:360px;margin:0!important}
 #lbx{background:radial-gradient(circle at 50% 15%,#2d4a96,#141a3a 55%,#0c0f1e)!important;gap:clamp(6px,1.2vh,10px)!important;justify-content:flex-start!important;padding-top:clamp(14px,3vh,30px)!important}
-.pod{display:flex;align-items:flex-end;justify-content:center;gap:8px;width:100%;max-width:360px;height:clamp(150px,25vh,200px)}
+.pod{margin-top:14px;display:flex;align-items:flex-end;justify-content:center;gap:8px;width:100%;max-width:360px;height:clamp(150px,25vh,200px)}
 .pcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}.pav{width:46px;height:46px;border-radius:50%;border:3px solid #1a1220;display:flex;align-items:center;justify-content:center;font:900 20px system-ui;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.4)}
 .pnm{font:900 12px system-ui;color:#fff;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.psc{font:900 13px system-ui;color:#ffd23f}
 .pblk{width:100%;border:3px solid #1a1220;border-radius:12px 12px 0 0;display:flex;align-items:flex-start;justify-content:center;font:900 26px system-ui;padding-top:4px}
@@ -63,7 +63,7 @@ $('lbBtn').onclick=()=>openLB2('all');
 #shop .scard2.sel{outline:4px solid #ffd23f;transform:translateY(-2px)}
 #sOv .pod .pav{animation:lbBob 1.8s ease-in-out infinite;box-shadow:0 0 0 3px #1a1220,0 0 18px rgba(255,210,63,.6)}
 #sOv .pod .pcol:nth-child(2) .pav{width:64px!important;height:64px!important;font-size:26px!important;box-shadow:0 0 0 4px #1a1220,0 0 30px #ffd23f}
-#sOv .pod .pcol:nth-child(2)::before{content:'👑';display:block;font-size:30px;animation:lbBob 1.2s ease-in-out infinite;margin-bottom:-6px}
+#sOv .pod .pcol:nth-child(2)::before{content:'👑';display:block;font-size:22px;animation:lbBob 1.2s ease-in-out infinite;margin-bottom:-6px}
 #sOv .pblk{border:3px solid #1a1220;box-shadow:inset 0 8px 0 rgba(255,255,255,.35),0 5px 0 #1a1220;font:900 22px system-ui;color:#1a1220}
 #sOv .lrow{animation:lbIn .45s both;background:linear-gradient(90deg,rgba(255,255,255,.14),rgba(255,255,255,.05))!important;border-radius:14px!important}
 #sOv .lrow:nth-of-type(2){animation-delay:.05s}#sOv .lrow:nth-of-type(3){animation-delay:.1s}#sOv .lrow:nth-of-type(4){animation-delay:.15s}#sOv .lrow:nth-of-type(5){animation-delay:.2s}#sOv .lrow:nth-of-type(6){animation-delay:.25s}#sOv .lrow:nth-of-type(7){animation-delay:.3s}

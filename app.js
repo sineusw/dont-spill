@@ -42,7 +42,7 @@ const css=document.createElement('style');css.textContent=`#gear{position:fixed;
 .sw{width:54px;height:30px;border-radius:15px;background:#4a3a56;position:relative;border:2px solid #1a1220;transition:.2s}.sw.on{background:#2bb673}.sw::after{content:'';position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}.sw.on::after{left:26px}
 body{padding-top:env(safe-area-inset-top)}`;document.head.appendChild(css);
 const gear=document.createElement('button');gear.id='gear';gear.textContent='⚙️';document.body.appendChild(gear);
-const syncGear=()=>gear.style.display=$('start').classList.contains('hidden')?'none':'block';setInterval(syncGear,300);
+const syncGear=()=>{const other=[...document.querySelectorAll('.ov:not(.hidden)')].some(e=>e.id!=='start'&&e!==ov&&getComputedStyle(e).display!=='none');gear.style.display=$('start').classList.contains('hidden')||other?'none':'block';};setInterval(syncGear,300);
 const ov=document.createElement('div');ov.className='ov scroll hidden';ov.style.zIndex=9;document.body.appendChild(ov);
 function openSet(){const row=(k,l)=>`<div class="tg">${l}<div class="sw ${S.set[k]?'on':''}" data-k="${k}"></div></div>`;
  ov.innerHTML=`<div class="lbl">SETTINGS</div>${row('sfx','🔊 Sound effects')}${row('music','🎵 Music')}${row('vib','📳 Vibration')}${NAT?row('notif','🔔 Rush reminders'):''}

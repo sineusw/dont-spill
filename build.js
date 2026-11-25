@@ -8,8 +8,12 @@ const ROOMS={patio:{name:'Patio',ic:'🌴',cost:750,per:4,tb:200,g:1.4,mult:1.5,
  vip:{name:'VIP Lounge',ic:'💎',cost:2500,per:10,tb:500,g:1.45,mult:3,wall:['#4a2470','#2a1440'],trim:['#b8860b','#e0a91a'],floor:['#4a1f3a','#6a2d56'],tile:'rgba(255,215,0,.08)',cloth:'rgba(184,134,11,.8)',sign:'VIP LOUNGE',signC:'#b8860b',lamp:'#e0a91a'}};
 S.tab.runner=S.tab.runner||0;
 // collapsible upgrade sheet so the restaurant isn't covered
-(()=>{const sh=$('build');if(!sh||$('shTog'))return;const st=document.createElement('style');st.textContent='#build.mini>*:not(#shTog):not(.row){display:none!important}#shTog{margin:-4px auto 6px!important;padding:6px 18px!important;font-size:13px!important;border-radius:999px!important;background:#3a2a48!important;color:#ffd23f!important;box-shadow:0 3px 0 #120c18!important;display:block}#build.mini #shTog{animation:shP 1.4s ease-in-out infinite}@keyframes shP{50%{transform:scale(1.06)}}';document.head.appendChild(st);
- const b=document.createElement('button');b.id='shTog';sh.prepend(b);const upd=()=>{const m=S.sheetMini!==0;sh.classList.toggle('mini',m);b.textContent=m?'▲ UPGRADE YOUR RESTAURANT':'▼ HIDE MENU · SEE RESTAURANT';};b.onclick=()=>{S.sheetMini=S.sheetMini!==0?0:1;save();upd();};upd();})();S.rooms=S.rooms||{patio:{own:0,tables:0},vip:{own:0,tables:0}};S.theme=S.theme||'diner';S.themes=S.themes||['diner'];S.view=S.view||'main';
+(()=>{const sh=$('build');if(!sh||$('shTog'))return;const st=document.createElement('style');st.textContent='#build.mini>*:not(#shTog):not(.row):not(#shGrab){display:none!important}#shTog{margin:-4px auto 6px!important;padding:6px 18px!important;font-size:13px!important;border-radius:999px!important;background:#3a2a48!important;color:#ffd23f!important;box-shadow:0 3px 0 #120c18!important;display:block}#build.mini #shTog{animation:shP 1.4s ease-in-out infinite}@keyframes shP{50%{transform:scale(1.06)}}';document.head.appendChild(st);
+ const b=document.createElement('button');b.id='shTog';sh.prepend(b);const upd=()=>{const m=S.sheetMini!==0;sh.classList.toggle('mini',m);b.textContent=m?'▲ UPGRADE YOUR RESTAURANT':'▼ HIDE MENU · SEE RESTAURANT';};b.onclick=()=>{S.sheetMini=S.sheetMini!==0?0:1;save();upd();};upd();
+ // swipe the sheet up/down
+ let sy=null,st0=0;sh.addEventListener('touchstart',e=>{sy=e.touches[0].clientY;st0=sh.scrollTop;},{passive:true});
+ sh.addEventListener('touchend',e=>{if(sy==null)return;const dy=e.changedTouches[0].clientY-sy;sy=null;const m=S.sheetMini!==0;if(dy>45&&!m&&st0<=2){S.sheetMini=1;save();upd();}else if(dy<-45&&m){S.sheetMini=0;save();upd();}},{passive:true});
+ const hd=document.createElement('div');hd.id='shGrab';hd.style.cssText='width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.35);margin:-4px auto 8px;flex:none';sh.prepend(hd);})();S.rooms=S.rooms||{patio:{own:0,tables:0},vip:{own:0,tables:0}};S.theme=S.theme||'diner';S.themes=S.themes||['diner'];S.view=S.view||'main';
 window.roomRate=()=>S.rooms.patio.tables*ROOMS.patio.per+S.rooms.vip.tables*ROOMS.vip.per;
 const TH=()=>S.view==='main'?THEMES[S.theme]:Object.assign({},THEMES.diner,ROOMS[S.view],{wall:ROOMS[S.view].wall||THEMES.diner.wall,trim:ROOMS[S.view].trim||THEMES.diner.trim});
 const nTables=()=>S.view==='main'?S.tab.tables:S.rooms[S.view].tables;
@@ -197,10 +201,10 @@ function placeOrder(t,g){g.st='waiting';g.d=0;g.f=0;g.fe=(CFOOD[S.city]||FOODS)[
  g.cook=5.5;}
 function served(g){if(g.d===2&&g.f===2){g.st='eating';g.t=rand(6,9);}}
 // ---- staff agents
-function want(){const a=[];if(S.pass||(S.tipUntil||0)>Date.now())a.push(['tips',0]);const n=1+Math.min(lvl('waiter'),3);for(let i=0;i<n;i++)a.push(['server',i]);if(lvl('host'))a.push(['host',0]);for(let i=0;i<Math.min(lvl('runner'),2);i++)a.push(['runner',i]);if(lvl('busboy'))a.push(['bus',0]);if(lvl('busboy')>=4)a.push(['bus',1]);return a;}
+function want(){const a=[];if((S.tipUntil||0)>Date.now())a.push(['tips',0]);const n=1+Math.min(lvl('waiter'),3);for(let i=0;i<n;i++)a.push(['server',i]);if(lvl('host'))a.push(['host',0]);for(let i=0;i<Math.min(lvl('runner'),2);i++)a.push(['runner',i]);if(lvl('busboy'))a.push(['bus',0]);if(lvl('busboy')>=4)a.push(['bus',1]);return a;}
 function syncAgents(T){const sg=S.view+want().map(x=>x.join()).join('|');if(sim.sig===sg)return;const old=sim.ag;sim.ag=[];sim.sig=sg;
  if(sim.view!==S.view){sim.view=S.view;sim.tasks=[];sim.barQ=[];sim.passQ=[];for(const k in guests)if(k.startsWith(S.view+':'))delete guests[k];}
- want().forEach(([role,i])=>{const o=old.find(a=>a.role===role&&a.i===i&&!a.steps.length);const home=role==='host'?{u:SPOT.pod.u-.02,v:SPOT.pod.v+.08}:role==='bus'?{u:SPOT.bus.u+.1+i*.12,v:SPOT.bus.v+.1}:role==='runner'?{u:1.05,v:.12+i*.12}:{u:-.5+i*.38,v:.55};
+ want().forEach(([role,i])=>{const o=old.find(a=>a.role===role&&a.i===i&&!a.steps.length);const home=role==='host'?{u:SPOT.pod.u-.02,v:SPOT.pod.v+.08}:role==='bus'?{u:SPOT.bus.u+.1+i*.12,v:SPOT.bus.v+.1}:role==='runner'?{u:1.02+i*.14,v:.13}:{u:-.5+i*.38,v:.55};
   sim.ag.push(o?Object.assign(o,{home}):{role,i,u:home.u,v:home.v,home,steps:[],task:null,carry:null,act:'',hidden:0,k:role==='server'?i*2+1:role==='host'?2:role==='runner'?5+i:4,face:1,mv:0});});
  for(const tk of sim.tasks)if(tk.by&&!sim.ag.includes(tk.by)){tk.by=null;}}
 const CAN={tips:['coin'],server:['order','drink','food','roll','clear'],runner:['food'],bus:['roll','clear'],host:['seat']};
@@ -490,9 +494,9 @@ $('collect').addEventListener('click',()=>{confetti(W/2,(bot||H*.4)*.6,30);},tru
  window.dsPreview=(cv2,o,gl,w,h)=>{const O=OUTFITS.find(x=>x.id===o)||OUTFITS[0],d=Math.min(3,window.devicePixelRatio||1);cv2.width=Math.round(w*d);cv2.height=Math.round(h*d);cv2.style.width=w+'px';cv2.style.height=h+'px';const c2=cv2.getContext('2d');
   cx.save();cx.setTransform(d,0,0,d,0,0);cx.clearRect(0,0,w+2,h+2);const gr=cx.createRadialGradient(w/2,h*.45,4,w/2,h*.5,h*.6);gr.addColorStop(0,O.cost>=1000?'rgba(255,210,63,.55)':'rgba(255,255,255,.35)');gr.addColorStop(1,'rgba(255,255,255,0)');cx.fillStyle=gr;cx.fillRect(0,0,w,h);
   cx.fillStyle='rgba(0,0,0,.18)';cx.beginPath();cx.ellipse(w/2,h*.9,w*.3,h*.05,0,0,TAU);cx.fill();
-  const s=h/80;staff(w/2,h*.74,s,0,'srv',0,1,O);
-  const pal=PAL[gl]||PAL.classic;cx.strokeStyle=SKIN[0];cx.lineWidth=5*s;cx.lineCap='round';cx.beginPath();cx.moveTo(w/2+10*s,h*.74-18*s);cx.lineTo(w/2+18*s,h*.74-30*s);cx.stroke();el(w/2+18*s,h*.74-33*s,14*s,3.5*s,'#dfe6ee',2);
-  if(gl==='neon'){cx.shadowColor='#2fffe0';cx.shadowBlur=12;}for(let i=0;i<3;i++)drinkIcon(w/2+(12+i*6)*s,h*.74-(42+i*1)*s,s*.95,pal[i]);cx.shadowBlur=0;
+  const s=h/92;staff(w/2,h*.8,s,0,'srv',0,1,O);
+  const pal=PAL[gl]||PAL.classic;cx.strokeStyle=SKIN[0];cx.lineWidth=5*s;cx.lineCap='round';cx.beginPath();cx.moveTo(w/2+10*s,h*.8-18*s);cx.lineTo(w/2+18*s,h*.8-30*s);cx.stroke();el(w/2+18*s,h*.8-33*s,14*s,3.5*s,'#dfe6ee',2);
+  if(gl==='neon'){cx.shadowColor='#2fffe0';cx.shadowBlur=12;}for(let i=0;i<3;i++)drinkIcon(w/2+(12+i*6)*s,h*.8-(42+i*1)*s,s*.95,pal[i]);cx.shadowBlur=0;
   if(O.cost>=1000){cx.font=`${10*s}px system-ui`;cx.textAlign='center';cx.globalAlpha=.6+.4*Math.sin(Date.now()/200);cx.fillText('✨',w*.2,h*.25);cx.fillText('✨',w*.8,h*.4);cx.globalAlpha=1;}
   c2.drawImage(cv,0,0,cv2.width,cv2.height,0,0,cv2.width,cv2.height);cx.restore();};})();
 // ---- celebrate maxed upgrades / completed sections
@@ -518,7 +522,7 @@ $('collect').addEventListener('click',()=>{confetti(W/2,(bot||H*.4)*.6,30);},tru
 
 // ===================== ROAD TRIP: cities =====================
 function cityDeco(){if(S.view!=='main')return;const c=curCity();cx.font=`${Math.min(30,W*.07)}px system-ui`;cx.textAlign='center';cx.textBaseline='middle';const xs=[W*.47,W*.53,W*.5];c.deco.forEach((e,i)=>{cx.save();cx.translate(W*(.44+i*.06),wallH*(i===2?.1:.13));cx.rotate(Math.sin(BT*1.2+i)*.06);cx.fillText(e,0,0);cx.restore();});cx.textBaseline='alphabetic';
- const t='📍 '+c.city.toUpperCase()+', '+c.st;cx.font='900 10px system-ui';const w=cx.measureText(t).width+14;cx.fillStyle='rgba(26,18,32,.8)';cx.beginPath();cx.roundRect(W/2-w/2,wallH-18,w,15,7);cx.fill();cx.fillStyle='#fff';cx.fillText(t,W/2,wallH-7);}
+ const t='📍 '+c.city.toUpperCase()+', '+c.st;cx.font='900 10px system-ui';const w=cx.measureText(t).width+14;cx.fillStyle='rgba(26,18,32,.8)';cx.beginPath();cx.roundRect(8,8,w,16,8);cx.fill();cx.fillStyle='#fff';cx.textAlign='left';cx.fillText(t,15,19.5);cx.textAlign='center';}
 const CITIES=[
  {id:'nash',city:'Nashville',st:'TN',name:"Hometown Diner",theme:'diner',ic:'🍔',x:60,y:44,deco:['🎸','🤠','🎶'],games:[],blurb:'Where it all started.'},
  {id:'mia',city:'Miami',st:'FL',name:"Salty's Seafood Shack",theme:'seafood',ic:'🦐',x:80,y:90,deco:['🛟','🐠','🌴'],games:['fish','fillet'],blurb:'Fresh catch, ocean breeze, sunburnt tourists.'},
@@ -539,6 +543,7 @@ function travel(id){if(id===S.city)return;const c=CITIES.find(x=>x.id===id);if(!
  const t=S.trip[id];if(t&&t.tab){CK.forEach(k=>{if(t[k]!==null&&t[k]!==undefined)S[k]=t[k];});S.last=Date.now();}
  else{S.tab={tables:1,waiter:0,host:0,bartender:0,busboy:0,runner:0};S.decor=[];S.rooms={patio:{own:0,tables:0},vip:{own:0,tables:0}};S.themes=[c.theme];S.theme=c.theme;S.coins=0;S.bank=0;S.last=Date.now();S.mgrUntil=0;S.maxd=null;S.view='main';S.trip[id]={};}
  S.city=id;save();for(const k in guests)delete guests[k];sim.sig='';sim.view='';BLKsig='';if(window.renderBuild&&state==='build')renderBuild();if(window.renderMenu)renderMenu();}
+window._travel=id=>travel(id);
 const unlocked=i=>i===0||S.done[CITIES[i-1].id];
 // ---- offline earnings: 10% while away unless a manager is on duty
 function accrue(){const now=Date.now(),last=S.last||now;if(S.bank==null){S.bank=0;}const mins=Math.max(0,(now-last)/60000),r=rateMin();if(mins<=0){S.last=now;return;}
@@ -546,21 +551,22 @@ function accrue(){const now=Date.now(),last=S.last||now;if(S.bank==null){S.bank=
  S.bank=Math.min(r*480,(S.bank||0)+earned);S.last=now;}
 window.dsAccrue=accrue;setInterval(()=>{if(!document.hidden)accrue();},1000);
 document.addEventListener('visibilitychange',()=>{accrue();save();});
-const mgrOn=()=>!!S.pass||(S.mgrUntil||0)>Date.now(),mgrLeft=()=>Math.max(0,(S.mgrUntil||0)-Date.now());
+const mgrOn=()=>(S.mgrUntil||0)>Date.now(),mgrLeft=()=>Math.max(0,(S.mgrUntil||0)-Date.now());
 function addMgr(ms){S.mgrUntil=Math.min(Date.now()+8*3600e3,Math.max(Date.now(),S.mgrUntil||0)+ms);save();}
-window.dsGrant=k=>{if(k==='mgr')addMgr(8*3600e3);else if(k==='tips'){S.tipUntil=Math.max(Date.now(),S.tipUntil||0)+4*3600e3;sim.sig='';}else if(k==='pass'){S.pass=1;sim.sig='';}save();try{confetti(W/2,H*.3,60);}catch(e){}buzz([30,40,30,40,90]);};
+window.dsGrant=k=>{if(k==='mgr')addMgr(8*3600e3);else if(k==='tips'){S.tipUntil=Math.max(Date.now(),S.tipUntil||0)+4*3600e3;sim.sig='';}save();try{confetti(W/2,H*.3,60);}catch(e){}buzz([30,40,30,40,90]);};
 const fmtT=ms=>{const m=Math.round(ms/60000);return m>=60?Math.floor(m/60)+'h '+(m%60)+'m':m+'m';};
-function iapBtns(k,lbl,def){if(S.pass)return '<div class="card" style="font-size:14px">⭐ <b>STAFF PASS</b> owned · Manager & Tip Runner work forever</div>';if(!window.dsIAP)return '';const I=window.dsIAP;
- return `<button class="iapB" data-k="${k}" style="width:100%;max-width:320px;background:#2f8fd0;box-shadow:0 6px 0 #1a5a8a">💳 ${I.price(k,def)} · ${lbl}</button><button class="iapB" data-k="pass" style="width:100%;max-width:320px;background:linear-gradient(#ffe066,#ffb21f);color:#1a1220;box-shadow:0 6px 0 #b37a00">⭐ STAFF PASS ${I.price('pass','$4.99')} · BOTH FOREVER</button><button id="iapR" class="ghost" style="width:auto;padding:6px 14px;font-size:12px;margin:0">Restore purchases</button>`;}
+function needMore(b,cost){const t=b.textContent;b.textContent='Need $'+(cost-S.coins)+' more 💸';b.style.background='#7a2a32';buzz([40,40,40]);snd(200,.15,'square',.08);setTimeout(()=>{b.textContent=t;b.style.background='';},1600);}
+function iapBtns(k,lbl,def){if(!window.dsIAP)return '';const I=window.dsIAP;
+ return `<button class="iapB" data-k="${k}" style="width:100%;max-width:320px;background:#2f8fd0;box-shadow:0 6px 0 #1a5a8a">💳 ${I.price(k,def)} · ${lbl}</button>`;}
 function iapWire(reopen){document.querySelectorAll('#ov2 .iapB').forEach(b=>b.onclick=async()=>{b.disabled=true;const t=b.textContent;b.textContent='Connecting to App Store…';const r=await dsIAP.buy(b.dataset.k);if(r==='ok')reopen();else{b.disabled=false;b.textContent=r==='cancel'?t:r==='pending'?'Pending approval…':'Purchase failed · try again';}});
- const rb=$('iapR');if(rb)rb.onclick=async()=>{rb.textContent='Restoring…';const ok=await dsIAP.restore();rb.textContent=ok?'✓ Restored':'Nothing to restore';if(ok)reopen();};}
+ const rb=$('iapR');if(rb)rb.onclick=async()=>{rb.textContent='Restoring…';};}
 function openMgr(){const cost=Math.max(150,Math.round(rateMin()*35));const on=mgrOn();
  show2(`<div class="lbl">AWAY EARNINGS</div><div style="font-size:64px;line-height:1">🧑‍💼</div><h1 style="font-size:30px;margin:0">NIGHT MANAGER</h1>
  <div class="card" style="font-size:15px;line-height:1.45">${on?`<b style="color:#7cff6b">ON DUTY · ${fmtT(mgrLeft())} left</b><br>You earn <b>100%</b> while you're away.`:`While you're away you only earn <b style="color:#ff8a7a">10%</b>.<br>Hire a manager to earn <b style="color:#7cff6b">100%</b>.`}<br><small style="opacity:.8">Max 8 hours stacked</small></div>
  <button id="mgAd" style="width:100%;max-width:320px">▶ WATCH AD · +1 HOUR</button>
- <button id="mgPay" class="ghost" style="width:100%;max-width:320px" ${S.coins<cost?'disabled':''}>💵 PAY $${cost} · +2 HOURS</button>
+ <button id="mgPay" class="ghost" style="width:100%;max-width:320px">💵 PAY $${cost} · +2 HOURS</button>
  ${iapBtns('mgr','+8 HOURS','$0.99')}<button id="mgX" class="ghost" style="width:100%;max-width:320px">CLOSE</button>`);iapWire(openMgr);
- $('mgX').onclick=hide2;$('mgPay').onclick=()=>{if(S.coins<cost)return;S.coins-=cost;addMgr(2*3600e3);snd(880,.12,'square',.1);buzz([20,30,40]);openMgr();if(window.renderBuild)renderBuild();};
+ $('mgX').onclick=hide2;$('mgPay').onclick=()=>{if(S.coins<cost){needMore($('mgPay'),cost);return;}S.coins-=cost;addMgr(2*3600e3);snd(880,.12,'square',.1);buzz([20,30,40]);openMgr();if(window.renderBuild)renderBuild();};
  $('mgAd').onclick=async()=>{const b=$('mgAd');b.disabled=true;let ok=false;if(window.dsRewardAd){b.textContent='Loading ad…';ok=await dsRewardAd();}else{b.textContent='Ad playing… 3';for(let i=2;i>=0;i--){await new Promise(r=>setTimeout(r,1000));b.textContent='Ad playing… '+i;}ok=true;}
   if(ok){addMgr(3600e3);snd(1180,.15,'triangle',.12);buzz([20,30,60]);openMgr();}else b.textContent='No ad right now · try again later';};}
 function show2(h){let o=$('ov2');if(!o){o=document.createElement('div');o.id='ov2';o.className='ov';o.style.zIndex=30;document.body.appendChild(o);}o.innerHTML=h;o.classList.remove('hidden');}
@@ -617,19 +623,19 @@ setInterval(()=>{if(stars()>=5&&!S.done[S.city]){S.done[S.city]=1;S.bestStars=5;
 
 const _seC=simEntities;simEntities=function(){const E=_seC();if(mgrOn()&&S.view==='main'){const p=P(.2,.14),s=p.s*.9;E.push({y:p.y+14*s,f:()=>{staff(p.x,p.y,s,4,'srv',BT,1,{shirt:'#fff',vest:'#2a2a48',tie:'#ffd23f',shoe:'#000',apron:0});cx.fillStyle='#f4f4f4';cx.beginPath();cx.roundRect(p.x+8*s,p.y-28*s,11*s,14*s,2*s);cx.fill();ink(1.5);cx.fillStyle='#8a5a2b';cx.fillRect(p.x+11*s,p.y-30*s,5*s,3*s);TAGS.push([p.x,p.y-62*s,'🧑‍💼 MANAGER',1]);}});}return E;};
 (()=>{const sh=$('build');if(sh&&!$('tripRow')){const r=document.createElement('div');r.id='tripRow';r.className='row';r.style.cssText='gap:8px;width:100%;margin:2px 0 8px;flex-wrap:nowrap';r.innerHTML='<button id="bMap" class="ghost" style="flex:1;margin:0;padding:9px 6px;font-size:14px">🗺️ ROAD TRIP</button><button id="bMgr" class="ghost" style="flex:1;margin:0;padding:9px 6px;font-size:14px">🧑‍💼 MANAGER</button>';const tog=$('shTog');tog?tog.after(r):sh.prepend(r);$('bMap').onclick=openMap;$('bMgr').onclick=openMgr;setInterval(()=>{const b=$('bMgr');if(b)b.textContent=mgrOn()?'🧑‍💼 ON · '+fmtT(mgrLeft()):'🧑‍💼 AWAY: 10%';},1000);}
- const go=$('go');if(go&&!$('mapBtn')){const b=document.createElement('button');b.id='mapBtn';b.style.cssText='width:100%;max-width:340px;margin:0;background:#2f8fd0;box-shadow:0 6px 0 #1a5a8a';go.parentElement.after(b);b.onclick=openMap;const u=()=>{const c=curCity();b.textContent='🗺️ ROAD TRIP · '+c.city.toUpperCase()+', '+c.st;};u();setInterval(u,2000);}})();
+ const go=$('go');if(go&&!$('mapBtn')){const b=document.createElement('button');b.id='mapBtn';b.style.cssText='width:100%;max-width:340px;margin:0;background:#2f8fd0;box-shadow:0 6px 0 #1a5a8a';go.parentElement.after(b);b.onclick=openMap;const u=()=>{const c=curCity();b.textContent='🗺️ TRIP · '+c.city.toUpperCase();b.style.fontSize=c.city.length>9?'19px':'';};u();setInterval(u,2000);}})();
 
 // ---- Tip Runner: auto-collects table coins (pay cash or watch an ad)
-const tipOn=()=>!!S.pass||(S.tipUntil||0)>Date.now();
-setInterval(()=>{if(state!=='build'||!tipOn())return;const T=tables().slice(0,nTables());for(const t of T){const b=bubs[key(t)];if(b&&b.ready&&!sim.tasks.some(x=>x.type==='coin'&&x.t===t))task('coin',t,guest(t));}},500);
+const tipOn=()=>(S.tipUntil||0)>Date.now();
+setInterval(()=>{if(state!=='build'||!tipOn())return;const T=tables().slice(0,nTables());for(const t of T){const b=bubs[key(t)];if(b&&b.ready&&!sim.tasks.some(x=>x.type==='coin'&&x.t&&x.t.i===t.i))task('coin',t,guest(t));}},500);
 function openTips(){const cost=Math.max(100,Math.round(rateMin()*15));const on=tipOn(),left=Math.max(0,(S.tipUntil||0)-Date.now());
  show2(`<div class="lbl">TABLE TIPS</div><div style="font-size:64px;line-height:1">🤠💰</div><h1 style="font-size:30px;margin:0">TIP RUNNER</h1>
  <div class="card" style="font-size:15px;line-height:1.45">${on?`<b style="color:#7cff6b">WORKING · ${fmtT(left)} left</b><br>Runs around grabbing every coin off the tables for you.`:`Hire a Tip Runner to grab the coins off the tables for you while you play.`}<br><small style="opacity:.8">Up to 4 hours stacked</small></div>
  <button id="tpAd" style="width:100%;max-width:320px">▶ WATCH AD · +30 MIN</button>
- <button id="tpPay" class="ghost" style="width:100%;max-width:320px" ${S.coins<cost?'disabled':''}>💵 PAY $${cost} · +1 HOUR</button>
+ <button id="tpPay" class="ghost" style="width:100%;max-width:320px">💵 PAY $${cost} · +1 HOUR</button>
  ${iapBtns('tips','+4 HOURS','$0.99')}<button id="tpX" class="ghost" style="width:100%;max-width:320px">CLOSE</button>`);iapWire(openTips);
  const add=ms=>{S.tipUntil=Math.min(Date.now()+4*3600e3,Math.max(Date.now(),S.tipUntil||0)+ms);save();sim.sig='';};
- $('tpX').onclick=hide2;$('tpPay').onclick=()=>{if(S.coins<cost)return;S.coins-=cost;add(3600e3);snd(880,.12,'square',.1);buzz([20,30,40]);openTips();if(window.renderBuild)renderBuild();};
+ $('tpX').onclick=hide2;$('tpPay').onclick=()=>{if(S.coins<cost){needMore($('tpPay'),cost);return;}S.coins-=cost;add(3600e3);snd(880,.12,'square',.1);buzz([20,30,40]);openTips();if(window.renderBuild)renderBuild();};
  $('tpAd').onclick=async()=>{const b=$('tpAd');b.disabled=true;let ok=false;if(window.dsRewardAd){b.textContent='Loading ad…';ok=await dsRewardAd();}else{b.textContent='Ad playing… 3';for(let i=2;i>=0;i--){await new Promise(r=>setTimeout(r,1000));b.textContent='Ad playing… '+i;}ok=true;}
   if(ok){add(1800e3);snd(1180,.15,'triangle',.12);buzz([20,30,60]);openTips();}else b.textContent='No ad right now · try again later';};}
 (()=>{const r=$('tripRow');if(r&&!$('bTip')){r.innerHTML='<button id="bMap" class="ghost" style="flex:1;margin:0;padding:7px 4px;font-size:13px;line-height:1.2">🗺️ TRIP</button><button id="bTip" class="ghost" style="flex:1;margin:0;padding:7px 4px;font-size:13px;line-height:1.2">💰 TIPS</button><button id="bMgr" class="ghost" style="flex:1;margin:0;padding:7px 4px;font-size:13px;line-height:1.2">🧑‍💼 AWAY</button>';$('bMap').onclick=openMap;$('bMgr').onclick=openMgr;$('bTip').onclick=openTips;
