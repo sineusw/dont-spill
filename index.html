@@ -74,6 +74,7 @@ button.ghost{background:#3a2a48;box-shadow:0 6px 0 #1e1428;font-size:18px;paddin
   <div class="row"><button class="ghost" id="share">COPY BRAG</button><button class="ghost" id="menu">MENU</button></div>
 </div>
 <script>
+window.SAT=0;window.SAB=0;(()=>{const p=document.createElement('div');p.style.cssText='position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-top);visibility:hidden;pointer-events:none';const q=document.createElement('div');q.style.cssText='position:fixed;left:0;top:0;width:1px;height:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none';document.documentElement.append(p,q);const u=new URLSearchParams(location.search),f=()=>{SAT=u.get('sat')?+u.get('sat'):p.getBoundingClientRect().height||0;SAB=u.get('sab')?+u.get('sab'):q.getBoundingClientRect().height||0;};f();addEventListener('resize',f);})();
 const cv=document.getElementById('c'),cx=cv.getContext('2d');
 let W,H,DPR,PY;
 function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cx.setTransform(DPR,0,0,DPR,0,0);PY=H*0.8;}

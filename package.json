@@ -14,7 +14,7 @@
     "petty-store": "file:plugins/store"
   },
   "scripts": {
-    "build": "rm -rf www && mkdir -p www && cp index.html shift.js build.js extras.js app.js native.js tour.js privacy.html www/",
+    "build": "rm -rf www && mkdir -p www && cp index.html shift.js build.js extras.js app.js native.js tour.js privacy.html support.html app-ads.txt www/",
     "ios": "npm run build && npx cap sync ios && npx cap open ios"
   },
   "devDependencies": {

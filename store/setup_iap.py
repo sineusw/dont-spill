@@ -21,7 +21,7 @@ for P in PRODUCTS:
     print('==',P['pid'])
     if P['pid'] in exist:iid=exist[P['pid']]['id'];print('exists',iid,exist[P['pid']]['attributes'].get('state'))
     else:
-        r=api('POST','/v2/inAppPurchases',json={'data':{'type':'inAppPurchases','attributes':{'name':P['name'],'productId':P['pid'],'inAppPurchaseType':P['type'],'reviewNote':'Purchase from the Night Manager / Tip Runner screens (Build > Manager or Tip Runner buttons). Consumables add time; Staff Pass makes both permanent.','familySharable':False},'relationships':{'app':{'data':{'type':'apps','id':APP}}}}})
+        r=api('POST','/v2/inAppPurchases',json={'data':{'type':'inAppPurchases','attributes':{'name':P['name'],'productId':P['pid'],'inAppPurchaseType':P['type'],'reviewNote':'Purchase from the Night Manager / Tip Runner screens (Build > Manager or Tip Runner buttons). Each purchase adds time to that helper.','familySharable':False},'relationships':{'app':{'data':{'type':'apps','id':APP}}}}})
         iid=r.json()['data']['id'];print('created',iid)
     # localization
     loc=api('GET',f'/v2/inAppPurchases/{iid}/inAppPurchaseLocalizations').json().get('data',[])

@@ -31,8 +31,8 @@ function renderShop2(){const list=tab==='o'?OUTFITS:GLASSES,cur=tab==='o'?S.outf
  <div class="sgrid">${list.map(i=>{const o=S.own.includes(key(tab,i.id)),e=i.id===cur;return `<button class="scard2 ${i.id===sel?'sel':''}" data-id="${i.id}"><canvas data-pv="${i.id}"></canvas><b>${i.name}</b><i class="${e?'on':o?'own':S.coins>=i.cost?'':'lock'}">${e?'WEARING':o?'OWNED':'$'+i.cost}</i></button>`}).join('')}</div>
  <button id="shAct" style="${on?'background:#6a5a76;box-shadow:0 6px 0 #3a2a48':!own&&S.coins<it.cost?'background:#8a7a86;box-shadow:0 6px 0 #4a3a46':'background:#2bb673;box-shadow:0 6px 0 #1a7a4c'}">${on?'✓ EQUIPPED':own?'EQUIP':S.coins>=it.cost?'BUY $'+it.cost:'NEED $'+(it.cost-S.coins)+' MORE'}</button>
  <button class="ghost" id="shBack" style="margin:0">BACK</button>`;
- const h=Math.max(180,Math.min(290,innerHeight*.33))-10;dsPreview($('shPv'),tab==='o'?sel:S.outfit,tab==='g'?sel:S.glass,h*1.1,h);
- const cs=Math.min(150,(Math.min(innerWidth,380)-40)/2-18);shop.querySelectorAll('[data-pv]').forEach(c=>dsPreview(c,tab==='o'?c.dataset.pv:S.outfit,tab==='g'?c.dataset.pv:S.glass,cs,cs*.9));
+ const stg=shop.querySelector('.stage'),h=Math.max(120,(stg&&stg.clientHeight||220)-14);dsPreview($('shPv'),tab==='o'?sel:S.outfit,tab==='g'?sel:S.glass,h*1.1,h);
+ const cs=Math.min(146,(Math.min(innerWidth,380)-40)/2-30);shop.querySelectorAll('[data-pv]').forEach(c=>dsPreview(c,tab==='o'?c.dataset.pv:S.outfit,tab==='g'?c.dataset.pv:S.glass,cs,cs*.9));
  $('shO').onclick=()=>{tab='o';sel=null;renderShop2();};$('shG').onclick=()=>{tab='g';sel=null;renderShop2();};
  shop.querySelectorAll('.scard2').forEach(b=>b.onclick=()=>{sel=b.dataset.id;renderShop2();});
  $('shAct').onclick=()=>{if(on)return;if(!own){if(S.coins<it.cost){buzz([40,30,40]);return;}S.coins-=it.cost;S.own.push(key(tab,sel));snd(880,.1,'triangle',.15);setTimeout(()=>snd(1320,.15,'triangle',.12),80);buzz([20,30,60]);}if(tab==='o')S.outfit=sel;else S.glass=sel;save();renderShop2();};
@@ -73,3 +73,4 @@ $('lbBtn').onclick=()=>openLB2('all');
  const _o=openLB2;window.openLB2Glow=async(b)=>{await _o(b);const ov=$('sOv');if(ov&&!ov.querySelector('.lbSpark')){const sp=document.createElement('div');sp.className='lbSpark';ov.prepend(sp);}if(typeof confetti==='function'&&window.W)try{confetti(W/2,H*.2,30);}catch(e){}};
  $('lbBtn').onclick=()=>openLB2Glow('all');})();
 })();
+(()=>{const s=document.createElement('style');s.textContent=`#shop>*{flex-shrink:0}#shop .sgrid{flex:1 1 0;min-height:120px;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:6px 4px 10px;box-sizing:border-box;align-content:start}#shop .stage{height:clamp(150px,28vh,280px)!important}`;document.head.appendChild(s);})();
