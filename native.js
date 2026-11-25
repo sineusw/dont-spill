@@ -3,7 +3,7 @@
 const CAP=window.Capacitor,NAT=CAP&&CAP.isNativePlatform&&CAP.isNativePlatform();if(!NAT)return;
 const PL=n=>(CAP.registerPlugin?CAP.registerPlugin(n):CAP.Plugins[n]);
 // ---- AdMob: swap these two test IDs for your real ones (also GADApplicationIdentifier in ios/App/App/Info.plist)
-const AD_REWARD_ID='ca-app-pub-3940256099942544/1712485313',AD_TESTING=true;
+const AD_REWARD_ID='ca-app-pub-3321938987480073/9751596349',AD_TESTING=false;
 const AM=PL('AdMob');let amReady=null;
 const amInit=()=>amReady||(amReady=AM.initialize({initializeForTesting:AD_TESTING}).catch(()=>{}));amInit();
 window.dsRewardAd=async()=>{try{await amInit();let rewarded=false;
