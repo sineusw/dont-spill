@@ -8,9 +8,9 @@ def api(m,p,**kw):
     if r.status_code>=400:print('!!',m,p,r.status_code,r.text[:800])
     return r
 PRODUCTS=[
- dict(pid='com.pettygames.dontspill.manager8h',name='Night Manager 8 Hours',type='CONSUMABLE',price='0.99',dn='Night Manager · 8 Hours',desc='Earn 100% of your restaurant income while away for 8 hours.'),
- dict(pid='com.pettygames.dontspill.tips4h',name='Tip Runner 4 Hours',type='CONSUMABLE',price='0.99',dn='Tip Runner · 4 Hours',desc='A Tip Runner collects every table coin for you for 4 hours.'),
- dict(pid='com.pettygames.dontspill.staffpass',name='Staff Pass',type='NON_CONSUMABLE',price='4.99',dn='Staff Pass',desc='Night Manager and Tip Runner on duty forever, in every city.')]
+ dict(pid='com.pettygames.dontspill.manager8h',name='Night Manager 8 Hours',type='CONSUMABLE',price='0.99',dn='Night Manager · 8 Hours',desc='Earn 100% while away for 8 hours.'),
+ dict(pid='com.pettygames.dontspill.tips4h',name='Tip Runner 4 Hours',type='CONSUMABLE',price='0.99',dn='Tip Runner · 4 Hours',desc='Auto-collects table coins for 4 hours.'),
+ dict(pid='com.pettygames.dontspill.staffpass',name='Staff Pass',type='NON_CONSUMABLE',price='4.99',dn='Staff Pass',desc='Night Manager + Tip Runner forever.')]
 exist={}
 r=api('GET',f'/v1/apps/{APP}/inAppPurchasesV2?limit=200')
 for d in r.json().get('data',[]):exist[d['attributes']['productId']]=d
