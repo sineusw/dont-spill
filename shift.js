@@ -231,16 +231,24 @@ G.swipe={name:'SWIPE THE CHECKS',hint:"SWIPE the way the arrow points",dur:10,c:
 
 function perkTxt(){if(run.mode==='daily')return ' (No perks today. Fair for everyone.)';const p=perks(),a=[];if(p.lives>3)a.push('❤️+'+(p.lives-3));if(p.save)a.push('🧹 '+p.save+' save');if(p.bar)a.push('🍸 slower pours');if(p.host>1)a.push('🙋 +'+Math.round((p.host-1)*100)+'% pts');return a.length?' Your staff: '+a.join(' · '):' Hire staff to get shift perks.';}
 // ===== city mini-games (road trip) =====
-G.fish={name:'REEL IT IN',hint:'HOLD to lift the green bar · keep the fish inside it!',dur:12,c:['#1f7fb0','#7fd0ec'],
- init(g){g.z=.5;g.zv=0;g.f=.5;g.ft=.5;g.tt=0;g.p=.35;},
- upd(g,dt){g.zv+=(ptr.down?2.8:-2.4)*dt;g.zv=cl(g.zv,-1.1,1.1);g.z+=g.zv*dt;if(g.z<.11){g.z=.11;g.zv=0;}if(g.z>.89){g.z=.89;g.zv=0;}
-  g.tt-=dt;if(g.tt<=0){g.tt=rr2(.45,1.1)/sp();g.ft=rr2(.08,.92);}g.f+=(g.ft-g.f)*Math.min(1,dt*2.2*sp());
-  const inz=Math.abs(g.f-g.z)<.11;g.in=inz;g.p+=inz?.26*dt:-.2*dt*Math.sqrt(sp());if(inz&&R()<.08)snd&&snd(900+g.p*400,.03,'triangle',.05);if(g.p>=1)return 'win';if(g.p<=0)return 'fail';},
- draw(g){const mx=SW/2-30,top=SH*.2,h=SH*.58,w=56;C.fillStyle='#0d4a6b';rrect(mx-w/2-6,top-6,w+12,h+12,18);C.fill();ink(4);
-  const zy=top+h*(1-g.z)-h*.11;C.fillStyle=g.in?'#7cff6b':'#4ad15a';rrect(mx-w/2,zy,w,h*.22,10);C.fill();ink(3);
-  emo('🐟',mx,top+h*(1-g.f),40);C.fillStyle='rgba(255,255,255,.5)';for(let i=0;i<5;i++){C.beginPath();C.arc(mx-20+i*10,top+h-((T*40+i*37)%h),3,0,TAU);C.fill();}
-  const px=SW/2+50;C.fillStyle='#0d4a6b';rrect(px-12,top,24,h,12);C.fill();ink(3);C.fillStyle=g.p>.3?'#ffd23f':'#ff5a3c';rrect(px-9,top+h*(1-g.p)+3,18,h*g.p-6,9);C.fill();
-  emo('🎣',px+46,top+10,44);bigText(g.p>=.85?'ALMOST!':'REEL IT IN',SW/2,SH*.12,30,'#fff',0);}};
+G.fish={name:'GONE FISHIN',hint:'Wait for the BIG SPLASH ❗ then TAP fast!',dur:13,c:['#1f7fb0','#7fd0ec'],
+ init(g){g.n=0;g.need=3;nb(g);},
+ upd(g,dt){g.t-=dt;if(g.st==='wait'&&g.t<=0){if(g.nib>0){g.nib--;g.st='nibble';g.t=.35;}else{g.st='bite';g.t=Math.max(.45,.85/Math.sqrt(sp()));snd&&snd(220,.2,'square',.12);buzz&&buzz(40);}}
+  else if(g.st==='nibble'&&g.t<=0){g.st='wait';g.t=rr2(.5,1.1);}
+  else if(g.st==='bite'&&g.t<=0){g.st='gone';g.res='fail';}
+  else if(g.st==='caught'&&g.t<=0){if(g.n>=g.need)return 'win';nb(g);}},
+ tap(g){if(g.res)return;if(g.st==='bite'){g.n++;g.st='caught';g.t=.8;snd&&snd(900+g.n*120,.12,'triangle',.14);buzz&&buzz([20,30,20]);}else if(g.st==='wait'||g.st==='nibble'){g.st='scared';g.res='fail';}},
+ draw(g){const wy=SH*.42;C.fillStyle='#2a8fc4';C.fillRect(0,wy,SW,SH-wy);C.fillStyle='rgba(255,255,255,.18)';for(let i=0;i<10;i++){const y=wy+20+i*30,x=((T*30+i*70)%(SW+80))-40;C.fillRect(x,y,50,4);}
+  C.fillStyle='#8a5a2b';rrect(-20,wy-30,SW*.42,40,10);C.fill();ink(4);emo('🧑',SW*.14,wy-60,56);
+  const bx=SW*.62,dip=g.st==='bite'?22+Math.sin(T*40)*6:g.st==='nibble'?8:Math.sin(T*3)*3,by=wy+dip;
+  C.strokeStyle='#5a3a1e';C.lineWidth=5;C.beginPath();C.moveTo(SW*.18,wy-70);C.quadraticCurveTo(SW*.35,wy-150,SW*.48,wy-120);C.stroke();C.strokeStyle='rgba(255,255,255,.8)';C.lineWidth=1.5;C.beginPath();C.moveTo(SW*.48,wy-120);C.lineTo(bx,by-10);C.stroke();
+  blob(bx,by-6,11,11,'#ff3b3b',3);C.fillStyle='#fff';C.fillRect(bx-11,by-6,22,5);
+  if(g.st==='bite'){C.fillStyle='rgba(255,255,255,.8)';for(let i=0;i<8;i++){const a=i/8*TAU;C.beginPath();C.arc(bx+Math.cos(a)*30,by+Math.sin(a)*8,5,0,TAU);C.fill();}bigText('❗ TAP NOW!',SW/2,SH*.24,46,'#ffd23f',0);}
+  else if(g.st==='caught'){emo('🐟',bx,by-70-(.8-g.t)*80,64);bigText('GOT ONE!',SW/2,SH*.24,40,'#7cff6b',0);}
+  else if(g.st==='scared'){bigText('TOO EARLY! 🐟💨',SW/2,SH*.24,30,'#ff8a7a',0);}
+  else{emo('🐟',bx+Math.sin(T*1.5)*60,wy+110,40);bigText(g.st==='nibble'?'nibble... WAIT!':'wait for it...',SW/2,SH*.24,26,'#fff',0);}
+  bigText('FISH '+g.n+' / '+g.need,SW/2,SH*.13,28,'#fff',0);}};
+function nb(g){g.st='wait';g.t=rr2(.9,2.2)/Math.sqrt(sp());g.nib=R()<.6?(1+(R()*2|0)):0;}
 G.fillet={name:'FILLET IT',hint:'DRAG along the dotted line · steady hand!',dur:12,c:['#2a8fb0','#bfeaf0'],
  init(g){g.n=0;g.need=3;nf(g);},
  upd(g,dt){if(ptr.down){const ly=g.ly(ptr.x);if(!g.cut){if(Math.abs(ptr.x-g.x0)<50&&Math.abs(ptr.y-g.ly(g.x0))<50){g.cut=1;g.pr=g.x0;}}else{const dy=Math.abs(ptr.y-ly);if(dy>46){g.bad={x:ptr.x,y:ptr.y};return 'fail';}if(ptr.x>g.pr){g.pr=Math.min(g.x1,ptr.x);if(R()<.3)snd&&snd(300+R()*80,.03,'sawtooth',.04);}
