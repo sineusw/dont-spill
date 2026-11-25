@@ -77,6 +77,10 @@ jobs:
             -archivePath "$RUNNER_TEMP/App.xcarchive" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
             CURRENT_PROJECT_VERSION=$BUILD_NUMBER
+          # Unsigned archives drop entitlements; embed them (ad-hoc) so export keeps Game Center.
+          APP="$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app"
+          codesign --force --sign - --entitlements ios/App/App/App.entitlements --timestamp=none "$APP"
+          codesign -d --entitlements - "$APP" 2>/dev/null | grep -q game-center || { echo "game-center entitlement missing"; exit 1; }
 
       - name: Export and upload to TestFlight
         run: |
@@ -97,3 +101,5 @@ jobs:
             -exportPath "$RUNNER_TEMP/export" \
             -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
             $AUTH_FLAGS
+          IPA=$(ls "$RUNNER_TEMP"/export/*.ipa 2>/dev/null | head -1)
+          if [ -n "$IPA" ]; then mkdir -p "$RUNNER_TEMP/chk" && unzip -q -o "$IPA" -d "$RUNNER_TEMP/chk" && codesign -d --entitlements - "$RUNNER_TEMP"/chk/Payload/App.app 2>/dev/null | tee /dev/stderr | grep -q game-center || { echo "exported app missing game-center"; exit 1; }; fi
