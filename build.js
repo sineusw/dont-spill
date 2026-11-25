@@ -197,7 +197,7 @@ function placeOrder(t,g){g.st='waiting';g.d=0;g.f=0;g.fe=(CFOOD[S.city]||FOODS)[
  g.cook=5.5;}
 function served(g){if(g.d===2&&g.f===2){g.st='eating';g.t=rand(6,9);}}
 // ---- staff agents
-function want(){const a=[];if((S.tipUntil||0)>Date.now())a.push(['tips',0]);const n=1+Math.min(lvl('waiter'),3);for(let i=0;i<n;i++)a.push(['server',i]);if(lvl('host'))a.push(['host',0]);for(let i=0;i<Math.min(lvl('runner'),2);i++)a.push(['runner',i]);if(lvl('busboy'))a.push(['bus',0]);if(lvl('busboy')>=4)a.push(['bus',1]);return a;}
+function want(){const a=[];if(S.pass||(S.tipUntil||0)>Date.now())a.push(['tips',0]);const n=1+Math.min(lvl('waiter'),3);for(let i=0;i<n;i++)a.push(['server',i]);if(lvl('host'))a.push(['host',0]);for(let i=0;i<Math.min(lvl('runner'),2);i++)a.push(['runner',i]);if(lvl('busboy'))a.push(['bus',0]);if(lvl('busboy')>=4)a.push(['bus',1]);return a;}
 function syncAgents(T){const sg=S.view+want().map(x=>x.join()).join('|');if(sim.sig===sg)return;const old=sim.ag;sim.ag=[];sim.sig=sg;
  if(sim.view!==S.view){sim.view=S.view;sim.tasks=[];sim.barQ=[];sim.passQ=[];for(const k in guests)if(k.startsWith(S.view+':'))delete guests[k];}
  want().forEach(([role,i])=>{const o=old.find(a=>a.role===role&&a.i===i&&!a.steps.length);const home=role==='host'?{u:SPOT.pod.u-.02,v:SPOT.pod.v+.08}:role==='bus'?{u:SPOT.bus.u+.1+i*.12,v:SPOT.bus.v+.1}:role==='runner'?{u:1.05,v:.12+i*.12}:{u:-.5+i*.38,v:.55};
@@ -546,15 +546,20 @@ function accrue(){const now=Date.now(),last=S.last||now;if(S.bank==null){S.bank=
  S.bank=Math.min(r*480,(S.bank||0)+earned);S.last=now;}
 window.dsAccrue=accrue;setInterval(()=>{if(!document.hidden)accrue();},1000);
 document.addEventListener('visibilitychange',()=>{accrue();save();});
-const mgrOn=()=>(S.mgrUntil||0)>Date.now(),mgrLeft=()=>Math.max(0,(S.mgrUntil||0)-Date.now());
+const mgrOn=()=>!!S.pass||(S.mgrUntil||0)>Date.now(),mgrLeft=()=>Math.max(0,(S.mgrUntil||0)-Date.now());
 function addMgr(ms){S.mgrUntil=Math.min(Date.now()+8*3600e3,Math.max(Date.now(),S.mgrUntil||0)+ms);save();}
+window.dsGrant=k=>{if(k==='mgr')addMgr(8*3600e3);else if(k==='tips'){S.tipUntil=Math.max(Date.now(),S.tipUntil||0)+4*3600e3;sim.sig='';}else if(k==='pass'){S.pass=1;sim.sig='';}save();try{confetti(W/2,H*.3,60);}catch(e){}buzz([30,40,30,40,90]);};
 const fmtT=ms=>{const m=Math.round(ms/60000);return m>=60?Math.floor(m/60)+'h '+(m%60)+'m':m+'m';};
+function iapBtns(k,lbl,def){if(S.pass)return '<div class="card" style="font-size:14px">⭐ <b>STAFF PASS</b> owned · Manager & Tip Runner work forever</div>';if(!window.dsIAP)return '';const I=window.dsIAP;
+ return `<button class="iapB" data-k="${k}" style="width:100%;max-width:320px;background:#2f8fd0;box-shadow:0 6px 0 #1a5a8a">💳 ${I.price(k,def)} · ${lbl}</button><button class="iapB" data-k="pass" style="width:100%;max-width:320px;background:linear-gradient(#ffe066,#ffb21f);color:#1a1220;box-shadow:0 6px 0 #b37a00">⭐ STAFF PASS ${I.price('pass','$4.99')} · BOTH FOREVER</button><button id="iapR" class="ghost" style="width:auto;padding:6px 14px;font-size:12px;margin:0">Restore purchases</button>`;}
+function iapWire(reopen){document.querySelectorAll('#ov2 .iapB').forEach(b=>b.onclick=async()=>{b.disabled=true;const t=b.textContent;b.textContent='Connecting to App Store…';const r=await dsIAP.buy(b.dataset.k);if(r==='ok')reopen();else{b.disabled=false;b.textContent=r==='cancel'?t:r==='pending'?'Pending approval…':'Purchase failed · try again';}});
+ const rb=$('iapR');if(rb)rb.onclick=async()=>{rb.textContent='Restoring…';const ok=await dsIAP.restore();rb.textContent=ok?'✓ Restored':'Nothing to restore';if(ok)reopen();};}
 function openMgr(){const cost=Math.max(150,Math.round(rateMin()*35));const on=mgrOn();
  show2(`<div class="lbl">AWAY EARNINGS</div><div style="font-size:64px;line-height:1">🧑‍💼</div><h1 style="font-size:30px;margin:0">NIGHT MANAGER</h1>
  <div class="card" style="font-size:15px;line-height:1.45">${on?`<b style="color:#7cff6b">ON DUTY · ${fmtT(mgrLeft())} left</b><br>You earn <b>100%</b> while you're away.`:`While you're away you only earn <b style="color:#ff8a7a">10%</b>.<br>Hire a manager to earn <b style="color:#7cff6b">100%</b>.`}<br><small style="opacity:.8">Max 8 hours stacked</small></div>
  <button id="mgAd" style="width:100%;max-width:320px">▶ WATCH AD · +1 HOUR</button>
  <button id="mgPay" class="ghost" style="width:100%;max-width:320px" ${S.coins<cost?'disabled':''}>💵 PAY $${cost} · +2 HOURS</button>
- <button id="mgX" class="ghost" style="width:100%;max-width:320px">CLOSE</button>`);
+ ${iapBtns('mgr','+8 HOURS','$0.99')}<button id="mgX" class="ghost" style="width:100%;max-width:320px">CLOSE</button>`);iapWire(openMgr);
  $('mgX').onclick=hide2;$('mgPay').onclick=()=>{if(S.coins<cost)return;S.coins-=cost;addMgr(2*3600e3);snd(880,.12,'square',.1);buzz([20,30,40]);openMgr();if(window.renderBuild)renderBuild();};
  $('mgAd').onclick=async()=>{const b=$('mgAd');b.disabled=true;let ok=false;if(window.dsRewardAd){b.textContent='Loading ad…';ok=await dsRewardAd();}else{b.textContent='Ad playing… 3';for(let i=2;i>=0;i--){await new Promise(r=>setTimeout(r,1000));b.textContent='Ad playing… '+i;}ok=true;}
   if(ok){addMgr(3600e3);snd(1180,.15,'triangle',.12);buzz([20,30,60]);openMgr();}else b.textContent='No ad right now · try again later';};}
@@ -615,14 +620,14 @@ const _seC=simEntities;simEntities=function(){const E=_seC();if(mgrOn()&&S.view=
  const go=$('go');if(go&&!$('mapBtn')){const b=document.createElement('button');b.id='mapBtn';b.style.cssText='width:100%;max-width:340px;margin:0;background:#2f8fd0;box-shadow:0 6px 0 #1a5a8a';go.parentElement.after(b);b.onclick=openMap;const u=()=>{const c=curCity();b.textContent='🗺️ ROAD TRIP · '+c.city.toUpperCase()+', '+c.st;};u();setInterval(u,2000);}})();
 
 // ---- Tip Runner: auto-collects table coins (pay cash or watch an ad)
-const tipOn=()=>(S.tipUntil||0)>Date.now();
+const tipOn=()=>!!S.pass||(S.tipUntil||0)>Date.now();
 setInterval(()=>{if(state!=='build'||!tipOn())return;const T=tables().slice(0,nTables());for(const t of T){const b=bubs[key(t)];if(b&&b.ready&&!sim.tasks.some(x=>x.type==='coin'&&x.t===t))task('coin',t,guest(t));}},500);
 function openTips(){const cost=Math.max(100,Math.round(rateMin()*15));const on=tipOn(),left=Math.max(0,(S.tipUntil||0)-Date.now());
  show2(`<div class="lbl">TABLE TIPS</div><div style="font-size:64px;line-height:1">🤠💰</div><h1 style="font-size:30px;margin:0">TIP RUNNER</h1>
  <div class="card" style="font-size:15px;line-height:1.45">${on?`<b style="color:#7cff6b">WORKING · ${fmtT(left)} left</b><br>Runs around grabbing every coin off the tables for you.`:`Hire a Tip Runner to grab the coins off the tables for you while you play.`}<br><small style="opacity:.8">Up to 4 hours stacked</small></div>
  <button id="tpAd" style="width:100%;max-width:320px">▶ WATCH AD · +30 MIN</button>
  <button id="tpPay" class="ghost" style="width:100%;max-width:320px" ${S.coins<cost?'disabled':''}>💵 PAY $${cost} · +1 HOUR</button>
- <button id="tpX" class="ghost" style="width:100%;max-width:320px">CLOSE</button>`);
+ ${iapBtns('tips','+4 HOURS','$0.99')}<button id="tpX" class="ghost" style="width:100%;max-width:320px">CLOSE</button>`);iapWire(openTips);
  const add=ms=>{S.tipUntil=Math.min(Date.now()+4*3600e3,Math.max(Date.now(),S.tipUntil||0)+ms);save();sim.sig='';};
  $('tpX').onclick=hide2;$('tpPay').onclick=()=>{if(S.coins<cost)return;S.coins-=cost;add(3600e3);snd(880,.12,'square',.1);buzz([20,30,40]);openTips();if(window.renderBuild)renderBuild();};
  $('tpAd').onclick=async()=>{const b=$('tpAd');b.disabled=true;let ok=false;if(window.dsRewardAd){b.textContent='Loading ad…';ok=await dsRewardAd();}else{b.textContent='Ad playing… 3';for(let i=2;i>=0;i--){await new Promise(r=>setTimeout(r,1000));b.textContent='Ad playing… '+i;}ok=true;}

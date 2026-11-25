@@ -1,0 +1,1 @@
+{"name":"petty-store","version":"1.0.0","description":"Minimal StoreKit 2 plugin for Don't Spill","license":"MIT","main":"index.js","files":["ios/","PettyStore.podspec","index.js"],"capacitor":{"ios":{"src":"ios"}},"peerDependencies":{"@capacitor/core":">=7.0.0"}}
