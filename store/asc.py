@@ -44,10 +44,12 @@ def metadata():
     il=g(f'/v1/appInfos/{iid}/appInfoLocalizations')['data'][0]
     r=api('PATCH',f"/v1/appInfoLocalizations/{il['id']}",json={'data':{'type':'appInfoLocalizations','id':il['id'],'attributes':{'subtitle':'Serve Fast. Build Your Diner.','privacyPolicyUrl':SITE+'/privacy.html'}}});print('info loc',r.status_code)
     r=api('PATCH',f'/v1/appInfos/{iid}',json={'data':{'type':'appInfos','id':iid,'relationships':{'primaryCategory':{'data':{'type':'appCategories','id':'GAMES'}},'primarySubcategoryOne':{'data':{'type':'appCategories','id':'GAMES_CASUAL'}},'primarySubcategoryTwo':{'data':{'type':'appCategories','id':'GAMES_SIMULATION'}}}}});print('category',r.status_code)
+    BOOLS={'datingAndRelationships','messagingAndChat','gambling','parentalControls','healthOrWellnessTopics','unrestrictedWebAccess','sharedLocation','lootBox','socialMedia','ageAssurance','userGeneratedContent','socialMediaAgeRestricted','advertising'}
     ar=g(f'/v1/appInfos/{iid}/ageRatingDeclaration')['data'];new={}
     for k in ar['attributes']:
-        if k in('kidsAgeBand','ageRatingOverride','ageRatingOverrideV2','koreaAgeRatingOverride','koreaAgeRatingOverrideV2','developerAgeRatingInfoUrl','seventeenPlus'):continue
-        new[k]=True if k=='advertising' else 'INFREQUENT_OR_MILD' if k=='alcoholTobaccoOrDrugUseOrReferences' else 'NONE'
+        if k in('kidsAgeBand','ageRatingOverride','ageRatingOverrideV2','koreaAgeRatingOverride','koreaAgeRatingOverrideV2','developerAgeRatingInfoUrl','seventeenPlus','gracRatingClassificationNumber'):continue
+        if 'Override' in k or 'Number' in k or 'Url' in k:continue
+        new[k]=True if k=='advertising' else False if k in BOOLS else 'INFREQUENT_OR_MILD' if k=='alcoholTobaccoOrDrugUseOrReferences' else 'NONE'
     for attempt in range(6):
         r=requests.patch(B+f"/v1/ageRatingDeclarations/{ar['id']}",headers={'Authorization':'Bearer '+tok(),'Content-Type':'application/json'},json={'data':{'type':'ageRatingDeclarations','id':ar['id'],'attributes':new}})
         if r.status_code<300:print('age ok',new);break
