@@ -1,1 +1,1 @@
-{"buildCommand":"npm run build","outputDirectory":"www"}
+{"buildCommand":"npm run build && cp -r review www/","outputDirectory":"www"}
